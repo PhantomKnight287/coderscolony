@@ -1,0 +1,17 @@
+{
+  "name": "deverse",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "turbo": "^1.6.2"
+  },
+  "packageManager": "pnpm@7.14.0"
+}
