@@ -1,0 +1,10 @@
+.container_ {
+  @apply flex flex-row items-center justify-evenly;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  border-bottom: unset;
+}
+
+.authButtonContainer {
+  @apply flex flex-row space-x-3;
+}
