@@ -12,6 +12,8 @@ import { AuthService } from 'src/services/auth/auth.service';
 import { PrismaService } from 'src/services/prisma/prisma.service';
 import { LoginBody, SignUpBody } from 'src/types/auth';
 import { Login, SignUp } from 'src/validators/auth.validator';
+import { config } from 'dotenv';
+config();
 
 @Controller('auth')
 export class AuthController {
@@ -66,7 +68,7 @@ export class AuthController {
       data: {
         email,
         password: hashedPassowrd,
-        username,
+        username: username.replace(' ', '').replace(/[^a-zA-Z0-9_ ]/g, ''),
         bannerColor: '#' + (((1 << 24) * Math.random()) | 0).toString(16),
         profileImage: `https://avatars.dicebear.com/api/big-smile/${username}.svg`,
       },
