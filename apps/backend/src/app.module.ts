@@ -5,10 +5,13 @@ import { AuthController } from './routes/auth/auth.controller';
 import { AuthService } from './services/auth/auth.service';
 import { PrismaService } from './services/prisma/prisma.service';
 import { MetadataController } from './routes/metadata/metadata.controller';
+import { NotificationsGateway } from './gateways/notifications/notifications.gateway';
+import { NotificationsController } from './routes/notifications/notifications.controller';
+import { NotificationsService } from './services/notifications/notifications.service';
 
 @Module({
   imports: [],
-  controllers: [AppController, AuthController, MetadataController],
-  providers: [AppService, AuthService, PrismaService],
+  controllers: [AppController, AuthController, MetadataController, NotificationsController],
+  providers: [AppService, AuthService, PrismaService, NotificationsGateway, NotificationsService],
 })
 export class AppModule {}
