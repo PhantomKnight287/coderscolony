@@ -13,6 +13,10 @@ import { NotificationsProvider } from "@mantine/notifications";
 import { motion, AnimatePresence } from "framer-motion";
 import { RouterTransition } from "@components/router";
 import { UserProvider } from "../context/user";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+
+const client = new QueryClient();
 
 export default function App(props: AppProps) {
   const { Component, ...pageProps } = props;
@@ -26,67 +30,72 @@ export default function App(props: AppProps) {
     setColorScheme(value || (colorScheme === "dark" ? "light" : "dark"));
 
   return (
-    <UserProvider>
-      <ColorSchemeProvider
-        colorScheme={colorScheme}
-        toggleColorScheme={toggleColorScheme}
-      >
-        <style global jsx>
-          {`
-            body {
-              color: ${colorScheme === "dark" ? "#ffffff" : "unset"} !important;
-            }
-          `}
-        </style>
-        <MantineProvider
-          theme={{
-            colorScheme,
-            fontFamily: "Inter",
-            white: "#ffffff",
-          }}
-          withGlobalStyles
-          withNormalizeCSS
-          withCSSVariables
+    <QueryClientProvider client={client}>
+      <UserProvider>
+        <ColorSchemeProvider
+          colorScheme={colorScheme}
+          toggleColorScheme={toggleColorScheme}
         >
-          <SpotlightProvider
-            actions={[
-              {
-                title: "Toggle Theme",
-                onTrigger: () => toggleColorScheme(),
-                description: "Toggle Theme Between Light and Dark Mode",
-                icon:
-                  colorScheme === "dark" ? (
-                    <IconSunHigh size={24} />
-                  ) : (
-                    <IconMoonStars size={24} />
-                  ),
-                keywords: ["theme", "dark", "light"],
-              },
-            ]}
-            shortcut="mod + J"
+          {/* <style global jsx>
+            {`
+              body {
+                color: ${colorScheme === "dark"
+                  ? "#ffffff"
+                  : "unset"} !important;
+              }
+            `}
+          </style> */}
+          <MantineProvider
+            theme={{
+              colorScheme,
+              fontFamily: "Inter",
+              white: "#ffffff",
+            }}
+            withGlobalStyles
+            withNormalizeCSS
+            withCSSVariables
           >
-            <NotificationsProvider>
-              <Header />
-              <RouterTransition />
-              <AnimatePresence mode="wait">
-                <motion.div
-                  variants={{
-                    initial: { opacity: 0 },
-                    animate: { opacity: 1 },
-                    exit: { opacity: 0 },
-                  }}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                  key={pageProps.router.pathname}
-                >
-                  <Component {...pageProps} />
-                </motion.div>
-              </AnimatePresence>
-            </NotificationsProvider>
-          </SpotlightProvider>
-        </MantineProvider>
-      </ColorSchemeProvider>
-    </UserProvider>
+            <SpotlightProvider
+              actions={[
+                {
+                  title: "Toggle Theme",
+                  onTrigger: () => toggleColorScheme(),
+                  description: "Toggle Theme Between Light and Dark Mode",
+                  icon:
+                    colorScheme === "dark" ? (
+                      <IconSunHigh size={24} />
+                    ) : (
+                      <IconMoonStars size={24} />
+                    ),
+                  keywords: ["theme", "dark", "light"],
+                },
+              ]}
+              shortcut="mod + J"
+            >
+              <NotificationsProvider>
+                <Header />
+                <ReactQueryDevtools />
+                <RouterTransition />
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    variants={{
+                      initial: { opacity: 0 },
+                      animate: { opacity: 1 },
+                      exit: { opacity: 0 },
+                    }}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    key={pageProps.router.pathname}
+                  >
+                    <Component {...pageProps} />
+                  </motion.div>
+                </AnimatePresence>
+              </NotificationsProvider>
+            </SpotlightProvider>
+          </MantineProvider>
+        </ColorSchemeProvider>
+      </UserProvider>
+    </QueryClientProvider>
   );
 }
