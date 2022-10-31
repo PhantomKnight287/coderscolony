@@ -6,9 +6,12 @@ import {
 } from "@mantine/core";
 import { clsx } from "clsx";
 import Link from "next/link";
+import { useUser } from "@hooks/user";
+import { UserMenu } from "./menu";
 
 export function Header() {
   const { colorScheme } = useMantineColorScheme();
+  const { id } = useUser();
   return (
     <MantineHeader height={60} className={styles.container_}>
       <div className={styles.avatar}>
@@ -31,36 +34,40 @@ export function Header() {
           <path d="M3 13a20 20 0 0 0 18 0"></path>
         </svg>
       </div>
-      <div className={styles["authButtonContainer"]}>
-        <Button
-          variant="default"
-          className={clsx(
-            "hover:scale-110 duration-[110ms] active:translate-y-[2px]",
-            {
-              "text-black": colorScheme === "light",
-            }
-          )}
-          radius="lg"
-          component={Link}
-          href="/auth/signup"
-        >
-          Join
-        </Button>
-        <Button
-          variant="default"
-          radius="lg"
-          className={clsx(
-            "hover:scale-110 duration-[110ms] active:translate-y-[2px]",
-            {
-              "text-black": colorScheme === "light",
-            }
-          )}
-          component={Link}
-          href="/auth/login"
-        >
-          Login
-        </Button>
-      </div>
+      {Boolean(id) === true ? (
+        <UserMenu />
+      ) : (
+        <div className={styles["authButtonContainer"]}>
+          <Button
+            variant="default"
+            className={clsx(
+              "hover:scale-110 duration-[110ms] active:translate-y-[2px]",
+              {
+                "text-black": colorScheme === "light",
+              }
+            )}
+            radius="lg"
+            component={Link}
+            href="/auth/signup"
+          >
+            Join
+          </Button>
+          <Button
+            variant="default"
+            radius="lg"
+            className={clsx(
+              "hover:scale-110 duration-[110ms] active:translate-y-[2px]",
+              {
+                "text-black": colorScheme === "light",
+              }
+            )}
+            component={Link}
+            href="/auth/login"
+          >
+            Login
+          </Button>
+        </div>
+      )}
     </MantineHeader>
   );
 }
