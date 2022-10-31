@@ -19,6 +19,7 @@ import { useUser, useUserDispatch } from "@hooks/user";
 import { createCookie, readCookie } from "@helpers/cookies";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
+import { useHydrateUserContext } from "@hooks/hydrate/context";
 
 export default function SignUP() {
   const formState = useForm({
@@ -26,6 +27,7 @@ export default function SignUP() {
       email: "",
       password: "",
       username: "",
+      name: "",
     },
     validate: {
       password: (p) =>
@@ -57,7 +59,7 @@ export default function SignUP() {
   useEffect(() => {
     if (id && readCookie("token")) return void replace("/");
   }, [id]);
-
+  useHydrateUserContext();
   return (
     <>
       <MetaTags
@@ -82,6 +84,12 @@ export default function SignUP() {
         </Text>
         <Paper withBorder shadow="md" p={30} mt={30} radius="md">
           <form onSubmit={formState.onSubmit((d) => handleFormSubmit(d))}>
+            <TextInput
+              label="Name"
+              placeholder="John Doe"
+              required
+              {...formState.getInputProps("name")}
+            />
             <TextInput
               label="Username"
               placeholder="johndoe"

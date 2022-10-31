@@ -18,6 +18,7 @@ import { useUser, useUserDispatch } from "@hooks/user";
 import { useRouter } from "next/router";
 import { createCookie, readCookie } from "@helpers/cookies";
 import { useEffect } from "react";
+import { useHydrateUserContext } from "@hooks/hydrate/context";
 
 export default function Login() {
   const formState = useForm({
@@ -32,7 +33,7 @@ export default function Login() {
   });
   const dispatch = useUserDispatch();
   const { id } = useUser();
-  const { replace } = useRouter();
+  const { replace, query, isReady } = useRouter();
   const handleFormSubmit = (e: typeof formState.values) => {
     signIn(e.email, e.password)
       .then((d) => d.data)
@@ -56,6 +57,14 @@ export default function Login() {
     if (id && readCookie("token")) return void replace("/");
   }, [id]);
 
+  useEffect(() => {
+    if (query.message) {
+      showNotification({
+        message: query.message,
+      });
+    }
+  }, [isReady]);
+  useHydrateUserContext();
   return (
     <>
       <MetaTags
