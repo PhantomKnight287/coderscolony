@@ -1,18 +1,22 @@
 import {
   Body,
   Controller,
+  Get,
   HttpException,
   HttpStatus,
   Post,
+  Response,
 } from '@nestjs/common';
 import { compare, hash } from 'bcrypt';
 import { ValidationError } from 'joi';
-import { sign } from 'jsonwebtoken';
+import { sign, TokenExpiredError, verify } from 'jsonwebtoken';
 import { AuthService } from 'src/services/auth/auth.service';
 import { PrismaService } from 'src/services/prisma/prisma.service';
 import { LoginBody, SignUpBody } from 'src/types/auth';
 import { Login, SignUp } from 'src/validators/auth.validator';
 import { config } from 'dotenv';
+import { Response as RES } from 'express';
+import { Token } from 'src/decorators/token/token.decorator';
 config();
 
 @Controller('auth')
@@ -53,7 +57,7 @@ export class AuthController {
       const error = e as ValidationError;
       throw new HttpException(error.details[0].message, HttpStatus.BAD_REQUEST);
     }
-    const { email, password, username } = body;
+    const { email, password, username, name } = body;
     const userWithEmail = await this.auth.getUserByEmail(email);
     if (userWithEmail)
       throw new HttpException(
@@ -68,6 +72,7 @@ export class AuthController {
       data: {
         email,
         password: hashedPassowrd,
+        name,
         username: username.replace(' ', '').replace(/[^a-zA-Z0-9_ ]/g, ''),
         bannerColor: '#' + (((1 << 24) * Math.random()) | 0).toString(16),
         profileImage: `https://avatars.dicebear.com/api/big-smile/${username}.svg`,
@@ -79,6 +84,7 @@ export class AuthController {
         id: true,
         profileImage: true,
         username: true,
+        name: true,
       },
     });
     const token = sign({ id: user.id }, process.env.JWT_SECRET, {
@@ -88,5 +94,47 @@ export class AuthController {
       token,
       user,
     };
+  }
+  @Get('hydrate')
+  async hydrate(@Token({ name: 'token' }) token: string, @Response() res: RES) {
+    if (!token)
+      throw new HttpException(
+        'Authentication Token is required to access this resource.',
+        HttpStatus.UNAUTHORIZED,
+      );
+    let jwt: { id: string };
+    try {
+      jwt = verify(token, process.env.JWT_SECRET) as unknown as {
+        id: string;
+      };
+    } catch (err) {
+      if (err instanceof TokenExpiredError) {
+        res.set({ 'X-Error': 'expired' });
+      }
+      throw new HttpException(
+        'Invalid or Expired Authentication Token',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+    const user = await this.prisma.prisma.user.findFirst({
+      where: {
+        id: jwt.id,
+      },
+      select: {
+        bannerColor: true,
+        bannerImage: true,
+        email: true,
+        id: true,
+        password: false,
+        profileImage: true,
+        username: true,
+        name: true,
+      },
+    });
+    if (!user) {
+      res.set({ 'X-Error': 'user-not-found' });
+      throw new HttpException('User Not Found', HttpStatus.NOT_FOUND);
+    }
+    return res.status(200).json({ ...user });
   }
 }
