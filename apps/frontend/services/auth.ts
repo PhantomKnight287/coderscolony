@@ -9,14 +9,17 @@ export function signUp({
   email,
   password,
   username,
+  name,
 }: {
   username: string;
   email: string;
   password: string;
+  name: string;
 }) {
   return axios.post<SignUpResponse>("/api/auth/signup", {
     username,
     email,
     password,
+    name,
   });
 }
