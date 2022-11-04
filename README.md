@@ -14,11 +14,11 @@ A platform where developers meeet each other to create awesome things.
 
 ## Features
 
- - Forums(WIP)
- - Customized Profiles
- - 1-1 Chat
- - Blog Posts
- - Markdown Support for Blog posts and POsts in forums
+- Forums(WIP)
+- Customized Profiles
+- 1-1 Chat
+- Blog Posts
+- Markdown Support for Blog posts and POsts in forums
 
 
 ### Forums
