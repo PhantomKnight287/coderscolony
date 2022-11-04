@@ -29,7 +29,7 @@ function ForumsPage() {
     status,
     refetch,
   } = useInfiniteQuery(
-    ["notifications"],
+    ["forums"],
     async (p) => {
       const res = await axios
         .get<{
