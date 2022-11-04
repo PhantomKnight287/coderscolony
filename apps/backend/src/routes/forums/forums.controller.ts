@@ -152,8 +152,8 @@ export class ForumsController {
     });
     return res.status(200).json({ forum: newForum, admin });
   }
-  @Post(':id/join')
-  async JoinForum(@Token() token: string, @Param('id') id: string) {
+  @Post(':slug/join')
+  async JoinForum(@Token() token: string, @Param('slug') slug: string) {
     let jwt: DecodedJWT;
     try {
       jwt = verify(token, process.env.JWT_SECRET) as unknown as DecodedJWT;
@@ -165,7 +165,7 @@ export class ForumsController {
     }
     const forum = await this.prisma.prisma.forums.findFirst({
       where: {
-        id,
+        urlSlug: slugify(slug),
       },
     });
     if (!forum)
@@ -253,6 +253,38 @@ export class ForumsController {
     return {
       ...data,
       joined: hasUserJoinedForum ? true : false,
+      userRole: hasUserJoinedForum.role,
     };
+  }
+  @Get(':slug/posts')
+  async getPosts(@Query('take') take: string, @Param('slug') slug: string) {
+    const posts = await this.prisma.prisma.posts.findMany({
+      where: {
+        Forums: {
+          urlSlug: slugify(slug),
+        },
+      },
+      select: {
+        author: {
+          select: {
+            username: true,
+            name: true,
+            profileImage: true,
+          },
+        },
+        content: true,
+        createdAt: true,
+        id: true,
+        slug: true,
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+      take: parseInt(take || '5'),
+      skip: parseInt(take) > 5 ? parseInt(take) - 5 : undefined,
+    });
+    const res: Record<string, any> = { posts };
+    if (posts.length === 5) res['next'] = parseInt(take) + 5;
+    return res;
   }
 }
