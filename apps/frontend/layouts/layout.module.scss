@@ -1,0 +1,10 @@
+.container {
+  @apply flex flex-row mt-20;
+}
+.sidebar {
+  flex: 0.25;
+}
+.content {
+  flex: 1;
+  @apply mr-5;
+}
