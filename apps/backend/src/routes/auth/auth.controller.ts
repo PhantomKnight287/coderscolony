@@ -85,6 +85,7 @@ export class AuthController {
         profileImage: true,
         username: true,
         name: true,
+        verified: true,
       },
     });
     const token = sign({ id: user.id }, process.env.JWT_SECRET, {
@@ -96,7 +97,7 @@ export class AuthController {
     };
   }
   @Get('hydrate')
-  async hydrate(@Token({ name: 'token' }) token: string, @Response() res: RES) {
+  async hydrate(@Token() token: string, @Response() res: RES) {
     if (!token)
       throw new HttpException(
         'Authentication Token is required to access this resource.',
@@ -129,6 +130,7 @@ export class AuthController {
         profileImage: true,
         username: true,
         name: true,
+        verified: true,
       },
     });
     if (!user) {
