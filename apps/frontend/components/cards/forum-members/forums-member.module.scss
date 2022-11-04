@@ -1,0 +1,21 @@
+.dark {
+  &:hover {
+    background: #1a1a1b;
+  }
+}
+.light {
+  &:hover {
+    background-color: #f9f9f9;
+  }
+}
+
+.name {
+  &:hover {
+    text-decoration: underline;
+  }
+  line-clamp: 1;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  width: 152px;
+}
