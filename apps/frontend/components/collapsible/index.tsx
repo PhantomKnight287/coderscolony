@@ -58,10 +58,13 @@ const useStyles = createStyles((theme) => ({
     transition: "transform 200ms ease",
     marginLeft: theme.spacing.sm,
   },
+  text: {
+    color: theme.colorScheme === "dark" ? "white" : "unset",
+  },
 }));
 
 interface LinksGroupProps {
-  icon: TablerIcon;
+  icon: TablerIcon | null;
   label: string;
   initiallyOpened?: boolean;
   links?: {
@@ -108,10 +111,12 @@ export function LinksGroup({
       >
         <Group position="apart" spacing={0}>
           <Box sx={{ display: "flex", alignItems: "center" }}>
-            <ThemeIcon variant="light" size={30}>
-              <Icon size={18} />
-            </ThemeIcon>
-            <Box ml="md" className="text-white">
+            {Icon && (
+              <ThemeIcon variant="light" size={30}>
+                <Icon size={18} />
+              </ThemeIcon>
+            )}
+            <Box ml="md" className={classes.text}>
               {label}
             </Box>
           </Box>
@@ -146,3 +151,7 @@ export function NavbarLinksGroup(props: LinksGroupProps) {
     </Box>
   );
 }
+
+const Collapsible = NavbarLinksGroup;
+
+export { Collapsible };
