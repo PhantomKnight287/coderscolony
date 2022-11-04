@@ -17,7 +17,7 @@ export function Header() {
   const { opened, setOpened } = useDrawer();
 
   return (
-    <MantineHeader height={60} className={styles.container_}>
+    <MantineHeader height={60} className={styles.container_}  >
       <div className="lg:hidden">
         <Burger opened={opened} onClick={() => setOpened((o) => !o)} />
       </div>
