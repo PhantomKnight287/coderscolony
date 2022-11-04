@@ -9,10 +9,10 @@ import {
 import { Request } from 'express';
 
 export const Token = createParamDecorator(
-  (data: unknown, ctx: ExecutionContext) => {
+  (data: { optional?: boolean }, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest<Request>();
     const token = request.headers['authorization']?.replace('Bearer ', '');
-    if (!token)
+    if (!token && !data.optional)
       throw new HttpException(
         'Authentication Token is required to access this resource.',
         HttpStatus.UNAUTHORIZED,
