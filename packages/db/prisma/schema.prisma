@@ -25,6 +25,7 @@ model User {
   verified      Boolean         @default(false)
   forums        ForumMember[]
   saved         Saved[]
+  Posts         Posts[]
 }
 
 model Notifications {
@@ -55,6 +56,7 @@ model Forums {
   forumMembers ForumMember[]
   createdAt    DateTime      @default(now())
   saves        Saved[]
+  posts        Posts[]
 }
 
 model ForumMember {
@@ -83,6 +85,17 @@ model Saved {
   User     User          @relation(fields: [userId], references: [id])
   userId   String
   variant  SavedVariants
-  forum    Forums?        @relation(fields: [forumsId], references: [id])
+  forum    Forums?       @relation(fields: [forumsId], references: [id])
   forumsId String?
+}
+
+model Posts {
+  id        String   @id @unique @default(cuid())
+  author    User     @relation(fields: [userId], references: [id])
+  userId    String
+  content   String
+  slug      String
+  createdAt DateTime @default(now())
+  Forums    Forums   @relation(fields: [forumsId], references: [id])
+  forumsId  String
 }
