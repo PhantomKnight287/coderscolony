@@ -6,7 +6,8 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "pnpm prebuild && tsc",
-    "prebuild": "prisma generate && prisma db push"
+    "prebuild": "prisma generate && prisma db push",
+    "dev":"pnpm build"
   },
   "keywords": [],
   "author": "",
