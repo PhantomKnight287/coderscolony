@@ -40,9 +40,7 @@ export class AuthController {
     const isPasswordSame = await compare(body.password, user.password);
     if (isPasswordSame === false)
       throw new HttpException('Incorrect Password', HttpStatus.UNAUTHORIZED);
-    const jwt = sign({ id: user.id }, process.env.JWT_SECRET, {
-      expiresIn: '10 days',
-    });
+    const jwt = sign({ id: user.id }, process.env.JWT_SECRET);
     delete user.password;
     return {
       token: jwt,
@@ -88,9 +86,7 @@ export class AuthController {
         verified: true,
       },
     });
-    const token = sign({ id: user.id }, process.env.JWT_SECRET, {
-      expiresIn: '10 days',
-    });
+    const token = sign({ id: user.id }, process.env.JWT_SECRET);
     return {
       token,
       user,
