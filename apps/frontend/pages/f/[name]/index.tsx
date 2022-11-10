@@ -16,14 +16,7 @@ import axios from "axios";
 import { ForumMemberRoles } from "db";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import { useRouter } from "next/router";
-import {
-  Fragment,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import styles from "../../../styles/dynamic-forum-page.module.scss";
 import { IconCalendar, IconUsers } from "@tabler/icons";
 import dayjs from "dayjs";
@@ -32,7 +25,6 @@ import { numberWithCommas } from "@helpers/number";
 import { ForumSidebar } from "@components/sidebar/forum";
 import { useIntersection } from "@mantine/hooks";
 import dynamic from "next/dynamic";
-import { Editor as Editor_ } from "@mantine/rte";
 
 const Editor = dynamic(
   () => import("../../../components/editor").then((d) => d.Editor),
@@ -78,7 +70,7 @@ const Forum = ({
   pageProps: InferGetServerSidePropsType<typeof getServerSideProps>;
 }) => {
   useHydrateUserContext();
-  const { query, isReady } = useRouter();
+  const { query, isReady,replace } = useRouter();
   const { id } = useUser();
   const [data, setData] = useState<ApiData | undefined>(pageProps);
   const {
@@ -121,7 +113,18 @@ const Forum = ({
     root: postsContainerRef.current,
     threshold: 1,
   });
-  const editorRef = useRef<Editor_>();
+
+  const createPost = (content: string, slug: string) => {
+    const cookie = readCookie("token");
+    if (!cookie)
+      return showNotification({
+        message: "Session Expired. Please Login Again",
+        color: "red",
+      });
+    const forumSlug = query.name
+    if(!forumSlug) return replace("/404")
+    axios.post(`/api/forums/posts/${forumSlug}/create`,{content,slug})
+  };
 
   useEffect(() => {
     const cookie = readCookie("token");
