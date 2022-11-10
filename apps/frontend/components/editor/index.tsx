@@ -1,6 +1,7 @@
 import { readCookie } from "@helpers/cookies";
 import {
   Button,
+  Divider,
   Modal,
   Tabs,
   Textarea,
@@ -135,12 +136,18 @@ export function Editor({ content, setContent }: Props) {
             placeholder="Write Something Here"
             value={content}
             onChange={(d) => setContent(d.target.value)}
+            className="mb-5"
           />
         </Tabs.Panel>
         <Tabs.Panel value="preview" pt="xs">
-          <Renderer children={getMarkdownString(content)} />
+          {content ? (
+            <Renderer children={getMarkdownString(content)} />
+          ) : (
+            <p className="text-center my-5">Nothing To Preview</p>
+          )}
         </Tabs.Panel>
       </Tabs>
+          <Divider orientation="horizontal" />
       <Modal centered opened={opened} onClose={() => setOpened((o) => !o)}>
         <Label required>Image To Upload</Label>
         <SingleFileDropzone mt={"md"} file={file} setFile={setFile} />
