@@ -11,10 +11,11 @@ import { NotificationsService } from './services/notifications/notifications.ser
 import { ForumsController } from './routes/forums/forums.controller';
 import { UploadController } from './routes/upload/upload.controller';
 import { ForumsService } from './services/forums/forums.service';
+import { ForumsPostController } from './routes/forums-post/forums-post.controller';
 
 @Module({
   imports: [],
-  controllers: [AppController, AuthController, MetadataController, NotificationsController, ForumsController, UploadController],
+  controllers: [AppController, AuthController, MetadataController, NotificationsController, ForumsController, UploadController, ForumsPostController],
   providers: [AppService, AuthService, PrismaService, NotificationsGateway, NotificationsService, ForumsService],
 })
 export class AppModule {}

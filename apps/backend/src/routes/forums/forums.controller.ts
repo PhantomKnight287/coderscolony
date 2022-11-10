@@ -25,7 +25,7 @@ export class ForumsController {
     protected prisma: PrismaService,
     protected forums: ForumsService,
   ) {}
-
+  // GET /forums/list?take=5
   @Get('list')
   async getForums(@Query('take') take: string) {
     const forums = await this.prisma.prisma.forums.findMany({
@@ -42,9 +42,14 @@ export class ForumsController {
         urlSlug: true,
         description: true,
       },
-      orderBy: {
-        createdAt: 'asc',
-      },
+      orderBy: [
+        {
+          createdAt: 'asc',
+        },
+        {
+          forumMembers: { _count: 'desc' },
+        },
+      ],
       take: parseInt(take || '5'),
       skip: parseInt(take) > 5 ? parseInt(take) - 5 : undefined,
     });

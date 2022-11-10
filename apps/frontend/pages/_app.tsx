@@ -19,6 +19,11 @@ import { ModalsProvider } from "@mantine/modals";
 import Layout from "../layouts";
 import { DrawerProvider } from "../context/drawer";
 import { SidebarProvider } from "../context/sidebar";
+import "@uiw/react-md-editor/markdown-editor.css";
+import "@uiw/react-markdown-preview/markdown.css";
+import "../styles/code.scss";
+import "highlight.js/scss/github-dark.scss"
+
 
 const client = new QueryClient();
 

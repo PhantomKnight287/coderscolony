@@ -1,0 +1,59 @@
+.sidebar {
+  @apply mt-5;
+  div {
+    @apply p-2;
+  }
+}
+
+.dark {
+  background: #25262b;
+  color: white !important;
+  min-height: 20px;
+  border-radius: 5px;
+  border-radius: 5px;
+  padding: 15px;
+  border: 1px solid #2c2e33;
+  border-top: none !important;
+}
+.light {
+  color: black !important;
+  background: white !important;
+  min-height: 20px;
+  border-radius: 5px;
+  border-radius: 5px;
+  padding: 15px;
+  border: 1px solid #2c2e33;
+  border-top: none !important;
+}
+
+.toolbar {
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  border: 1px solid #2c2e33;
+  button {
+    background-color: #25262b;
+    @apply rounded-sm;
+    &:nth-child(1) {
+      margin-left: 5px;
+    }
+    padding: 5px;
+    &:hover {
+      background-color: #1a1b1e;
+    }
+    &.active {
+      background-color: #1a2c3f;
+    }
+    svg {
+      margin: 0 !important;
+    }
+  }
+  @apply flex flex-row flex-wrap items-center justify-center space-x-2 rounded-md p-4 max-h-fit mb-4;
+}
+
+.toolbarContainer {
+  @apply flex flex-col items-center justify-center px-4;
+}
+
+.toolBarBTN {
+  background-color: red;
+}
