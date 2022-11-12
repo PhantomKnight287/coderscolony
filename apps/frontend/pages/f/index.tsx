@@ -52,9 +52,6 @@ function ForumsPage() {
     },
     {
       getNextPageParam: (lastPage, pages) => lastPage.next,
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-      refetchOnWindowFocus: false,
     }
   );
 
