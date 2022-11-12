@@ -20,7 +20,7 @@ export const Token = createParamDecorator(
         'Authentication Token is required to access this resource.',
         HttpStatus.UNAUTHORIZED,
       );
-    let jwt: DecodedJWT;
+    let jwt: DecodedJWT = undefined;
     if (data?.validate) {
       try {
         jwt = verify(token, process.env.JWT_SECRET) as unknown as DecodedJWT;
@@ -32,6 +32,6 @@ export const Token = createParamDecorator(
         );
       }
     }
-    return token;
+    return data?.validate ? jwt : token;
   },
 );
