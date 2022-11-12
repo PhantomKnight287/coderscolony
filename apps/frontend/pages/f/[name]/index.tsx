@@ -7,6 +7,7 @@ import {
   Button,
   Image,
   Loader,
+  Menu,
   Text,
   useMantineColorScheme,
 } from "@mantine/core";
@@ -18,13 +19,17 @@ import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import { useRouter } from "next/router";
 import { Fragment, useEffect, useRef, useState } from "react";
 import styles from "../../../styles/dynamic-forum-page.module.scss";
-import { IconCalendar, IconUsers } from "@tabler/icons";
+import { IconCalendar, IconDots, IconTrash, IconUsers } from "@tabler/icons";
 import dayjs from "dayjs";
 import { monthNames } from "../../../constants/months";
 import { numberWithCommas } from "@helpers/number";
 import { ForumSidebar } from "@components/sidebar/forum";
 import { useIntersection } from "@mantine/hooks";
 import dynamic from "next/dynamic";
+import ForumPost from "@components/post/forum-post";
+import type { ForumPost as ForumPostType } from "../../../types/forum-post";
+import { client } from "../../_app";
+import { openConfirmModal } from "@mantine/modals";
 
 const Editor = dynamic(
   () => import("../../../components/editor").then((d) => d.Editor),
@@ -70,7 +75,7 @@ const Forum = ({
   pageProps: InferGetServerSidePropsType<typeof getServerSideProps>;
 }) => {
   useHydrateUserContext();
-  const { query, isReady,replace } = useRouter();
+  const { query, isReady, replace, push } = useRouter();
   const { id } = useUser();
   const [data, setData] = useState<ApiData | undefined>(pageProps);
   const {
@@ -87,13 +92,7 @@ const Forum = ({
     async (p) => {
       const res = await axios
         .get<{
-          posts: {
-            createdAt: Date;
-            id: string;
-            slug: string;
-            author: { username: true; name: true; profileImage: true };
-            content: string;
-          }[];
+          posts: ForumPostType[];
           next?: number;
         }>(`/api/forums/${query.name}/posts?take=${p.pageParam || 5}`)
         .catch((err) => null);
@@ -103,8 +102,6 @@ const Forum = ({
     },
     {
       getNextPageParam: (lastPage, pages) => lastPage.next,
-      refetchOnMount: false,
-      refetchOnWindowFocus: false,
     }
   );
   const { colorScheme } = useMantineColorScheme();
@@ -121,9 +118,26 @@ const Forum = ({
         message: "Session Expired. Please Login Again",
         color: "red",
       });
-    const forumSlug = query.name
-    if(!forumSlug) return replace("/404")
-    axios.post(`/api/forums/posts/${forumSlug}/create`,{content,slug})
+    const forumSlug = query.name;
+    if (!forumSlug) return replace("/404");
+    axios
+      .post<{ slug: string }>(
+        `/api/forums/posts/${forumSlug}/create`,
+        { content, slug },
+        {
+          headers: {
+            authorization: `Bearer ${cookie}`,
+          },
+        }
+      )
+      .then((d) => d.data)
+      .then((d) => push(`/f/${query.name}/post/${d.slug}`))
+      .catch((err) => {
+        return showNotification({
+          message: err.response?.data?.message || "An Error Occured",
+          color: "red",
+        });
+      });
   };
 
   useEffect(() => {
@@ -149,10 +163,73 @@ const Forum = ({
   }, [isReady, id]);
 
   useEffect(() => {
-    fetchNextPage();
+    if (entry?.isIntersecting) {
+      fetchNextPage();
+    } else {
+      refetch();
+    }
   }, [entry?.isIntersecting]);
 
+  useEffect(() => {
+    return () => {
+      async () => {
+        return await client.invalidateQueries();
+      };
+    };
+  }, []);
   const [content, setContent] = useState("");
+
+  const openConfirmationModal = () =>
+    openConfirmModal({
+      title: "Please confirm your action",
+      children: (
+        <Text size="sm">
+          You're about to leave this forum. You'll not recieve updates regarding
+          this forum. If you're the only admin, this forum will be deleted.
+        </Text>
+      ),
+      onConfirm: leaveForum,
+      centered: true,
+      labels: {
+        cancel: "Cancel",
+        confirm: "Leave",
+      },
+      confirmProps: {
+        style: {
+          backgroundColor: "red",
+        },
+      },
+    });
+  const leaveForum = () => {
+    const cookie = readCookie("token");
+    if (!cookie)
+      return showNotification({
+        message: "This session has expired. Please Login Again.",
+        color: "red",
+      });
+    axios
+      .post<{ goBack?: boolean }>(
+        `/api/forums/${query.name}/leave`,
+        undefined,
+        {
+          headers: {
+            authorization: `Bearer ${cookie}`,
+          },
+        }
+      )
+      .then((d) => d.data)
+      .then((d) => {
+        if (d.goBack) {
+          client.invalidateQueries();
+          replace("/f");
+        }
+      })
+      .catch((err) =>
+        showNotification({
+          message: err.response?.data?.message || "An Error Occured.",
+        })
+      );
+  };
 
   if (data === undefined)
     return (
@@ -174,8 +251,10 @@ const Forum = ({
             : `/images/${data.profileImage}`
         }
       />
-      <div className="flex-[0.75] mr-4">
-        <div className="flex flex-row flex-wrap items-center justify-start border-b-[1px] border-[#2c2c2c] pb-4">
+      <div className="flex-1 lg:flex-[0.75] mx-4 lg:ml-0">
+        <div
+          className={`flex flex-row flex-wrap items-center justify-start border-b-[1px] border-[#2c2c2c] pb-4 ${styles.info}`}
+        >
           <div>
             <Image
               src={
@@ -238,9 +317,27 @@ const Forum = ({
               </div>
             </div>
           </div>
+          <Menu>
+            <Menu.Target>
+              <div className="cursor-pointer">
+                <IconDots size={20} />
+              </div>
+            </Menu.Target>
+            <Menu.Dropdown>
+              {pageProps.joined ? (
+                <Menu.Item color="red" onClick={openConfirmationModal}>
+                  Leave This Forum
+                </Menu.Item>
+              ) : null}
+            </Menu.Dropdown>
+          </Menu>
         </div>
         <div className="mt-5">
-          <Editor content={content} setContent={setContent} />
+          <Editor
+            content={content}
+            setContent={setContent}
+            createPost={createPost}
+          />
         </div>
         <div ref={postsContainerRef}>
           {status === "loading" ? (
@@ -252,7 +349,7 @@ const Forum = ({
               {posts.pages.map((post, id) => (
                 <Fragment key={id}>
                   {post.posts.map((p_) => (
-                    <p key={p_.id}>{p_.id}</p>
+                    <ForumPost {...p_} key={p_.id} />
                   ))}
                 </Fragment>
               ))}
@@ -279,11 +376,20 @@ const Forum = ({
             {isFetching && !isFetchingNextPage ? (
               "Fetching..."
             ) : (
-              <p className="text-center text-sm mt-4">No Posts Found.</p>
+              <p className="text-center text-sm mt-4">
+                {(posts?.pages || []).length > 0
+                  ? "No More Posts"
+                  : "No Posts Found"}
+              </p>
             )}
           </div>
-          <div ref={ref}>
-            <Text weight={700}></Text>
+          <div ref={ref} className="opacity-0">
+            <Text weight={700}>
+              Lorem, ipsum dolor sit amet consectetur adipisicing elit. Ipsum
+              expedita quas laboriosam maiores quod, nobis molestias quo
+              inventore rem modi consequuntur impedit rerum eum nisi dolore
+              beatae molestiae nemo!
+            </Text>
           </div>
         </div>
       </div>
