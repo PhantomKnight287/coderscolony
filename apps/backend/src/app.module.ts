@@ -12,10 +12,11 @@ import { ForumsController } from './routes/forums/forums.controller';
 import { UploadController } from './routes/upload/upload.controller';
 import { ForumsService } from './services/forums/forums.service';
 import { ForumsPostController } from './routes/forums-post/forums-post.controller';
+import { PostActionsController } from './routes/post-actions/post-actions.controller';
 
 @Module({
   imports: [],
-  controllers: [AppController, AuthController, MetadataController, NotificationsController, ForumsController, UploadController, ForumsPostController],
+  controllers: [AppController, AuthController, MetadataController, NotificationsController, ForumsController, UploadController, ForumsPostController, PostActionsController],
   providers: [AppService, AuthService, PrismaService, NotificationsGateway, NotificationsService, ForumsService],
 })
 export class AppModule {}
