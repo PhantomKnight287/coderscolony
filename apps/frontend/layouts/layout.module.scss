@@ -3,8 +3,14 @@
 }
 .sidebar {
   flex: 0.25;
+  @media (max-width: 1024px) {
+    display: none;
+  }
 }
 .content {
   flex: 1;
   @apply mr-5;
+  @media (max-width: 1024px) {
+    @apply m-0;
+  }
 }
