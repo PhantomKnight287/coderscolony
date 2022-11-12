@@ -5,13 +5,17 @@ import {
   Modal,
   Tabs,
   Textarea,
-  Tooltip,
-  TypographyStylesProvider,
-  useMantineColorScheme,
+  TextInput,
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import dynamic from "next/dynamic";
-import { IconBrandVscode, IconEye, IconPhoto, IconSend } from "@tabler/icons";
+import {
+  IconBrandVscode,
+  IconDice,
+  IconEye,
+  IconPhoto,
+  IconSend,
+} from "@tabler/icons";
 import axios from "axios";
 import {
   Dispatch,
@@ -21,10 +25,12 @@ import {
   useState,
 } from "react";
 import { SingleFileDropzone } from "@components/dropzones/single";
-import highlight from "highlight.js";
+import { nanoid } from "nanoid";
 import { Renderer } from "@components/renderer";
 import { getMarkdownString } from "@helpers/showdown";
 import Label from "@components/label";
+import { ToolBar } from "./toolbar";
+import { useForm } from "@mantine/form";
 
 const RTE = dynamic(() => import("@mantine/rte"), {
   ssr: false,
@@ -34,23 +40,12 @@ const RTE = dynamic(() => import("@mantine/rte"), {
 interface Props {
   content: string;
   setContent: Dispatch<SetStateAction<string>>;
+  createPost: (content: string, slug: string) => void | Promise<boolean>;
 }
-export function Editor({ content, setContent }: Props) {
+export function Editor({ content, setContent, createPost }: Props) {
   const [opened, setOpened] = useState(false);
-
-  const { colorScheme } = useMantineColorScheme();
-
-  const modules = useMemo(
-    () => ({
-      history: { delay: 2500, userOnly: true },
-      syntax: {
-        highlight: (text: string) => highlight.highlightAuto(text).value,
-      },
-    }),
-    []
-  );
   const [file, setFile] = useState<File>();
-
+  const [submitModalOpened, setSubmitModalOpened] = useState(false);
   const handleImageUpload = useCallback(
     (file: File | undefined): Promise<{ url: string }> => {
       return new Promise((resolve, reject) => {
@@ -82,32 +77,20 @@ export function Editor({ content, setContent }: Props) {
     },
     []
   );
-  const UpperBar = () => (
-    <>
-      <div className="flex flex-row items-center justify-between flex-wrap">
-        <div className="cursor-pointer p-2 ">
-          <Tooltip label="Upload An Image">
-            <span onClick={() => setOpened(true)}>
-              <IconPhoto
-                size={25}
-                className="hover:scale-125 duration-[110ms]"
-              />
-            </span>
-          </Tooltip>
-        </div>
-        <div className="cursor-pointer p-2 ">
-          <Tooltip label="Post">
-            <span>
-              <IconSend
-                size={25}
-                className="hover:scale-125 duration-[110ms]"
-              />
-            </span>
-          </Tooltip>
-        </div>
-      </div>
-    </>
-  );
+  const formState = useForm({
+    initialValues: {
+      slug: "",
+    },
+  });
+  const handler = () => {
+    if (!content)
+      return showNotification({
+        message: "Please Type Content of the Post",
+        color: "red",
+      });
+    setSubmitModalOpened(true);
+  };
+
   return (
     <>
       <Tabs defaultValue={"editor"}>
@@ -120,17 +103,7 @@ export function Editor({ content, setContent }: Props) {
           </Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel value="editor" pt="xs">
-          {/* <EditorContent
-            editor={editor}
-            className={"break-words whitespace-pre-line break-all"}
-          /> */}
-          {/* <RTE
-            value={content}
-            onChange={setContent}
-            modules={modules}
-            // onImageUpload={handleImageUpload}
-          /> */}
-          <UpperBar />
+          <ToolBar setOpened={setOpened} handler={handler} />
           <Textarea
             autosize
             placeholder="Write Something Here"
@@ -147,7 +120,7 @@ export function Editor({ content, setContent }: Props) {
           )}
         </Tabs.Panel>
       </Tabs>
-          <Divider orientation="horizontal" />
+      <Divider orientation="horizontal" />
       <Modal centered opened={opened} onClose={() => setOpened((o) => !o)}>
         <Label required>Image To Upload</Label>
         <SingleFileDropzone mt={"md"} file={file} setFile={setFile} />
@@ -169,6 +142,40 @@ export function Editor({ content, setContent }: Props) {
         >
           Upload
         </Button>
+      </Modal>
+      <Modal
+        centered
+        opened={submitModalOpened}
+        onClose={() => setSubmitModalOpened((o) => !o)}
+        title="Last Step"
+      >
+        <form onSubmit={formState.onSubmit((d) => createPost(content, d.slug))}>
+          <TextInput
+            label="Slug"
+            placeholder="Unique Slug for Your Post"
+            required
+            type="text"
+            {...formState.getInputProps("slug")}
+            rightSection={
+              <Button
+                onClick={() => {
+                  formState.setFieldValue("slug", nanoid(10));
+                }}
+                className="cursor-pointer min-w-max mr-8 hover:bg-inherit "
+              >
+                Random
+              </Button>
+            }
+          />
+          <Button
+            fullWidth
+            mt="xl"
+            type="submit"
+            className="bg-[#1864ab] bg-opacity-80 hover:scale-105  duration-[110ms]"
+          >
+            Create <IconSend size={25} />
+          </Button>
+        </form>
       </Modal>
     </>
   );
