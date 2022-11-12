@@ -21,9 +21,7 @@ import { DrawerProvider } from "../context/drawer";
 import { SidebarProvider } from "../context/sidebar";
 import "../styles/code.scss";
 
-
-
-const client = new QueryClient();
+export const client = new QueryClient();
 
 export default function App(props: AppProps) {
   const { Component, ...pageProps } = props;
