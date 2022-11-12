@@ -61,8 +61,8 @@ model Forums {
 
 model ForumMember {
   id       String           @id @unique @default(cuid())
-  user     User             @relation(fields: [userId], references: [id])
-  forum    Forums           @relation(fields: [forumsId], references: [id])
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  forum    Forums           @relation(fields: [forumsId], references: [id], onDelete: Cascade)
   role     ForumMemberRoles
   userId   String
   forumsId String
@@ -82,20 +82,21 @@ enum SavedVariants {
 
 model Saved {
   id       String        @id @unique @default(cuid())
-  User     User          @relation(fields: [userId], references: [id])
+  User     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId   String
   variant  SavedVariants
-  forum    Forums?       @relation(fields: [forumsId], references: [id])
+  forum    Forums?       @relation(fields: [forumsId], references: [id], onDelete: Cascade)
   forumsId String?
 }
 
 model Posts {
   id        String   @id @unique @default(cuid())
-  author    User     @relation(fields: [userId], references: [id])
+  author    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
   content   String
   slug      String
   createdAt DateTime @default(now())
-  Forums    Forums   @relation(fields: [forumsId], references: [id])
+  Forums    Forums   @relation(fields: [forumsId], references: [id], onDelete: Cascade)
   forumsId  String
+  likedBy   String[] @default([])
 }
