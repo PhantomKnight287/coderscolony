@@ -24,6 +24,7 @@ import { DrawerWrapper } from "../../wrapper/drawer";
 import { SingleFileDropzone } from "@components/dropzones/single";
 import Label from "@components/label";
 import { uploadSingleFile } from "@services/upload";
+import { client } from "../../pages/_app";
 
 export function Sidebar() {
   // const theme = useMantineTheme();
@@ -90,7 +91,7 @@ export function Sidebar() {
         });
         formState.reset();
         setModalOpened(false);
-        return push(`/f/${encodeURIComponent(d.forum.name)}`);
+        client.refetchQueries({ queryKey: ["forums"] });
       })
       .catch((err) => {
         if (err.response?.headers["X-Error"] === "expired")
