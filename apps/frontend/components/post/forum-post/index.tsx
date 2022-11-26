@@ -5,7 +5,6 @@ import { useRouter } from "next/router";
 import { memo } from "react";
 import type { ForumPost } from "../../../types/forum-post";
 import { PostAuthor } from "./post-author";
-import styles from "./styles.module.scss";
 
 function ForumPost({ author, content, createdAt, id, slug }: ForumPost) {
   const { query, push } = useRouter();
