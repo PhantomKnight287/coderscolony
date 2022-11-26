@@ -18,7 +18,7 @@ enum Modals {
 }
 
 export function UserMenu() {
-  const { profileImage, name } = useUser();
+  const { profileImage, name, username } = useUser();
   const { push } = useRouter();
   const [modals, setModals] = useState<Modals | null>(null);
   useHydrateUserContext();
@@ -27,14 +27,29 @@ export function UserMenu() {
       <Menu shadow="md" width={200} closeOnClickOutside closeOnEscape>
         <Menu.Target>
           <div className="flex flex-row hover:bg-[#5c5f6659] duration-75 rounded-md p-2 items-center">
-            <Avatar src={profileImage} radius="xl" size="md" />
+            <Avatar
+              src={
+                profileImage
+                  ? profileImage.startsWith("https://avatar.dicebar")
+                    ? profileImage
+                    : `/images/${profileImage}`
+                  : `https://avatars.dicebear.com/api/big-smile/${username}.svg`
+              }
+              radius="xl"
+              size="md"
+            />
             <span className="hidden lg:inline ml-2">{name}</span>
           </div>
         </Menu.Target>
 
         <Menu.Dropdown>
           <Menu.Label>Application</Menu.Label>
-          <Menu.Item icon={<IconSettings size={14} />}>Settings</Menu.Item>
+          <Menu.Item
+            onClick={() => push(`/u/${username}`)}
+            icon={<IconSettings size={14} />}
+          >
+            Profile
+          </Menu.Item>
           <Menu.Item icon={<IconMessageCircle size={14} />}>Messages</Menu.Item>
           <Menu.Item icon={<IconPhoto size={14} />}>Gallery</Menu.Item>
           <Menu.Item
