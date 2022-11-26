@@ -46,6 +46,7 @@ export function Editor({ content, setContent, createPost }: Props) {
   const [opened, setOpened] = useState(false);
   const [file, setFile] = useState<File>();
   const [submitModalOpened, setSubmitModalOpened] = useState(false);
+  const [loading, setLoading] = useState(false);
   const handleImageUpload = useCallback(
     (file: File | undefined): Promise<{ url: string }> => {
       return new Promise((resolve, reject) => {
@@ -127,7 +128,8 @@ export function Editor({ content, setContent, createPost }: Props) {
         <Button
           fullWidth
           mt="xl"
-          onClick={() =>
+          onClick={() => {
+            setLoading(true);
             handleImageUpload(file!)
               .then((d) => {
                 setContent((old) => `${old}\n![alt text](${d.url})\n`);
@@ -137,7 +139,9 @@ export function Editor({ content, setContent, createPost }: Props) {
               .catch((err) =>
                 showNotification({ message: err.message || "An Error Occured" })
               )
-          }
+              .finally(() => setLoading(false));
+          }}
+          loading={loading}
           className="bg-[#1864ab] bg-opacity-80 hover:scale-110 duration-[110ms]"
         >
           Upload
