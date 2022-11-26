@@ -17,6 +17,7 @@ model User {
   username      String          @unique
   password      String
   bannerColor   String?
+  oneLiner      String?
   // a link to cdn
   bannerImage   String?
   // a link to cdn or dicebar avatar
@@ -26,6 +27,10 @@ model User {
   forums        ForumMember[]
   saved         Saved[]
   Posts         Posts[]
+  Comments      Comments[]
+  createdAt     DateTime        @default(now())
+  followers     Follows[]       @relation("following")
+  following     Follows[]       @relation("follower")
 }
 
 model Notifications {
@@ -90,13 +95,32 @@ model Saved {
 }
 
 model Posts {
-  id        String   @id @unique @default(cuid())
-  author    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String     @id @unique @default(cuid())
+  author    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
   content   String
   slug      String
-  createdAt DateTime @default(now())
-  Forums    Forums   @relation(fields: [forumsId], references: [id], onDelete: Cascade)
+  createdAt DateTime   @default(now())
+  Forums    Forums     @relation(fields: [forumsId], references: [id], onDelete: Cascade)
   forumsId  String
-  likedBy   String[] @default([])
+  likedBy   String[]   @default([])
+  Comments  Comments[]
+}
+
+model Comments {
+  id        String   @id @unique @default(cuid())
+  author    User     @relation(fields: [userId], references: [id])
+  userId    String
+  createdAt DateTime @default(now())
+  post      Posts    @relation(fields: [postsId], references: [id])
+  postsId   String
+}
+
+model Follows {
+  follower    User   @relation("follower", fields: [followerId], references: [id])
+  followerId  String
+  following   User   @relation("following", fields: [followingId], references: [id])
+  followingId String
+
+  @@id([followerId, followingId])
 }
