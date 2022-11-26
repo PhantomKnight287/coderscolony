@@ -25,9 +25,9 @@ import { SingleFileDropzone } from "@components/dropzones/single";
 import Label from "@components/label";
 import { uploadSingleFile } from "@services/upload";
 import { client } from "../../pages/_app";
+import { useUser } from "@hooks/user";
 
 export function Sidebar() {
-  // const theme = useMantineTheme();
   const formState = useForm({
     initialValues: {
       name: "",
@@ -39,6 +39,7 @@ export function Sidebar() {
   const [modalOpened, setModalOpened] = useState(false);
   const [file, setFile] = useState<File | undefined>(undefined);
   const [loading, setLoading] = useState(false);
+  const { id } = useUser();
   const openFormModal = () => {
     setModalOpened((o) => !o);
   };
@@ -124,7 +125,6 @@ export function Sidebar() {
       },
       onConfirm: () => openFormModal(),
     });
-
   return (
     <DrawerWrapper>
       <aside className="lg:border-r-[1px] border-[#2c2c2c] mr-5 h-[100vh]">
@@ -144,7 +144,13 @@ export function Sidebar() {
                     Create
                   </UnstyledButton>
                 ),
-                handler: () => openWarningModal(),
+                handler: () => {
+                  if (id) {
+                    openWarningModal();
+                  } else {
+                    push("/auth/login");
+                  }
+                },
               },
               {
                 id: "LIST",
