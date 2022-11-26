@@ -30,6 +30,7 @@ import ForumPost from "@components/post/forum-post";
 import type { ForumPost as ForumPostType } from "../../../types/forum-post";
 import { client } from "../../_app";
 import { openConfirmModal } from "@mantine/modals";
+import { useSidebar } from "@hooks/sidebar";
 
 const Editor = dynamic(
   () => import("../../../components/editor").then((d) => d.Editor),
@@ -110,7 +111,7 @@ const Forum = ({
     root: postsContainerRef.current,
     threshold: 1,
   });
-
+  const { setOpened,opened } = useSidebar();
   const createPost = (content: string, slug: string) => {
     const cookie = readCookie("token");
     if (!cookie)
@@ -177,6 +178,12 @@ const Forum = ({
       };
     };
   }, []);
+
+  useEffect(() => {
+    setOpened(true)
+    return () => setOpened(false);
+  }, [opened]);
+
   const [content, setContent] = useState("");
 
   const openConfirmationModal = () =>
