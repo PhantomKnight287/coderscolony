@@ -1,4 +1,4 @@
-import { Avatar, useMantineColorScheme } from "@mantine/core";
+import { Avatar, Menu, useMantineColorScheme } from "@mantine/core";
 import clsx from "clsx";
 import { ForumPost } from "../../../types/forum-post";
 import styles from "./post-author.module.scss";
@@ -6,6 +6,8 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import updateLocale from "dayjs/plugin/updateLocale";
 import { ReactNode } from "react";
+import { IconDotsVertical, IconTrash } from "@tabler/icons";
+import Link from "next/link";
 
 dayjs.extend(relativeTime);
 dayjs.extend(updateLocale);
@@ -29,7 +31,12 @@ dayjs.updateLocale("en", {
 });
 
 export function PostAuthor(
-  props: ForumPost["author"] & { createdAt: string; content?: ReactNode }
+  props: ForumPost["author"] & {
+    createdAt: string;
+    content?: ReactNode;
+    showMenu?: boolean;
+    deletePost?: () => void;
+  }
 ) {
   const { colorScheme } = useMantineColorScheme();
   return (
@@ -38,27 +45,31 @@ export function PostAuthor(
         <Avatar src={props.profileImage} />
         <div className="flex flex-col">
           <div className={clsx("flex flex-row")}>
-            <p
-              className={clsx(
-                "font-semibold text-[14px] ml-2 hover:underline cursor-pointer",
-                {
-                  "text-white": colorScheme === "dark",
-                }
-              )}
-            >
-              {props.name}
-            </p>
-            <div className="flex items-center">
+            <Link href={`/u/${props.username}`}>
               <p
                 className={clsx(
-                  `text-[13px] ml-2 hover:underline cursor-pointer`,
+                  "font-semibold text-[14px] ml-2 hover:underline cursor-pointer",
                   {
-                    "text-[#666666]": colorScheme === "dark",
+                    "text-white": colorScheme === "dark",
                   }
                 )}
               >
-                @{props.username}
+                {props.name}
               </p>
+            </Link>
+            <div className="flex items-center">
+              <Link href={`/u/${props.username}`}>
+                <p
+                  className={clsx(
+                    `text-[13px] ml-2 hover:underline cursor-pointer`,
+                    {
+                      "text-[#666666]": colorScheme === "dark",
+                    }
+                  )}
+                >
+                  @{props.username}
+                </p>
+              </Link>
             </div>
             <div className="flex items-center">
               <p
@@ -72,6 +83,23 @@ export function PostAuthor(
           </div>
           {props.content || null}
         </div>
+        {props.showMenu ? (
+          <Menu>
+            <Menu.Target>
+              <div className="flex ml-auto cursor-pointer">
+                <IconDotsVertical
+                  size={20}
+                  color={colorScheme === "dark" ? "white" : "black"}
+                />
+              </div>
+            </Menu.Target>
+            <Menu.Dropdown>
+              <Menu.Item color="red" icon={<IconTrash size={14} />}>
+                Delete This Post
+              </Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
+        ) : null}
       </div>
     </>
   );
