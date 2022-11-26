@@ -14,7 +14,7 @@ import { DecodedJWT } from 'src/types/jwt';
 export class PostActionsController {
   constructor(protected prisma: PrismaService) {}
 
-  @Post('/like')
+  @Post('like')
   async idk(
     @Param('slug') slug: string,
     @Param('postSlug') postSlug: string,
