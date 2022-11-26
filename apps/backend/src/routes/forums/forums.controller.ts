@@ -280,6 +280,7 @@ export class ForumsController {
         createdAt: true,
         id: true,
         slug: true,
+        likedBy: true,
       },
       orderBy: {
         createdAt: 'desc',
@@ -287,7 +288,9 @@ export class ForumsController {
       take: parseInt(take || '5'),
       skip: parseInt(take) > 5 ? parseInt(take) - 5 : undefined,
     });
-    const res: Record<string, any> = { posts };
+    const res: Record<string, any> = {
+      posts: posts.map((p) => ({ ...p, likedBy: p.likedBy.length })),
+    };
     if (posts.length === 5) res['next'] = parseInt(take) + 5;
     return res;
   }

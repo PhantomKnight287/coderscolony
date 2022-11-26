@@ -130,9 +130,13 @@ export class ForumsPostController {
             name: true,
           },
         },
+        likedBy: true,
       },
     });
+    const likedBy = postInfo.likedBy.length;
+    delete postInfo.likedBy;
     const res: Record<string, any> = { post: postInfo };
+    res['post']['likedBy'] = likedBy;
     if (jwt !== undefined) {
       const { id } = jwt;
       const user = await this.prisma.prisma.forumMember.findFirst({
@@ -149,7 +153,6 @@ export class ForumsPostController {
           },
         },
       });
-      console.log(user);
       res['userInfo'] = {
         isAuthor: user?.user.id === postInfo.author.id,
         isAdmin: user?.role === 'ADMIN',
