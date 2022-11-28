@@ -39,6 +39,7 @@ import Label from "@components/label";
 import { uploadSingleFile } from "@services/upload";
 import { useForm } from "@mantine/form";
 import { useUserDispatch } from "@hooks/user";
+import { ProfileTabs } from "@components/profile/tabs";
 
 const UsernamePage: NextPage<{
   pageProps: InferGetServerSidePropsType<typeof getServerSideProps>;
@@ -184,6 +185,9 @@ const UsernamePage: NextPage<{
               </Link>
             </span>
           </div>
+        </div>
+        <div className="mt-10">
+          <ProfileTabs />
         </div>
       </Container>
       <Modal
