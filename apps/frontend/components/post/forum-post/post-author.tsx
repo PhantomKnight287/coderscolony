@@ -8,6 +8,8 @@ import updateLocale from "dayjs/plugin/updateLocale";
 import { ReactNode } from "react";
 import { IconDotsVertical, IconTrash } from "@tabler/icons";
 import Link from "next/link";
+import { useUser } from "@hooks/user";
+import { profileImageResolver } from "@helpers/profile-url";
 
 dayjs.extend(relativeTime);
 dayjs.extend(updateLocale);
@@ -39,10 +41,17 @@ export function PostAuthor(
   }
 ) {
   const { colorScheme } = useMantineColorScheme();
+  const { username } = useUser();
   return (
     <>
       <div className="flex flex-row items-center justify-start">
-        <Avatar src={props.profileImage} />
+        <Avatar
+          src={profileImageResolver({
+            profileURL: props.profileImage!,
+            username,
+          })}
+          radius="xl"
+        />
         <div className="flex flex-col">
           <div className={clsx("flex flex-row")}>
             <Link href={`/u/${props.username}`}>

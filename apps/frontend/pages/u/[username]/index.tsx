@@ -38,6 +38,7 @@ import { readCookie } from "@helpers/cookies";
 import Label from "@components/label";
 import { uploadSingleFile } from "@services/upload";
 import { useForm } from "@mantine/form";
+import { useUserDispatch } from "@hooks/user";
 
 const UsernamePage: NextPage<{
   pageProps: InferGetServerSidePropsType<typeof getServerSideProps>;
@@ -55,13 +56,12 @@ const UsernamePage: NextPage<{
   const [profileImage, setProfileImage] = useState<File>();
   const { isDirty, getInputProps, onSubmit, resetDirty } = useForm({
     initialValues: {
-      oneLiner: "",
+      oneLiner: user.oneLiner,
       name: user.name,
     },
   });
 
   useEffect(() => {
-    console.log(user);
     if (opened === true) {
       return setOpened(false);
     }
@@ -70,11 +70,13 @@ const UsernamePage: NextPage<{
 
   useHydrateUserContext();
 
+  const setGlobalUser = useUserDispatch();
   async function fetchProfileAndUpdateState() {
     const data = await fetchProfile(pageProps.username!, readCookie("token"));
     if (data.error === false) {
       delete data.error;
       setUser(data);
+      setGlobalUser({ payload: data, type: "SetUser" });
     }
   }
 

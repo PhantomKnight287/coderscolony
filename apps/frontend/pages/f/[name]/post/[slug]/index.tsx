@@ -30,8 +30,8 @@ const PostsPage: NextPage<{
   const { query } = useRouter();
   const [likes, setLikes] = useState(pageProps.post.likedBy || 0);
   useEffect(() => {
-    if (opened == false) {
-      // setOpened(false);
+    if (opened == true) {
+      setOpened(false);
     }
     return () => setOpened(true);
   }, []);
