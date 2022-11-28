@@ -13,6 +13,7 @@ interface Props {
   likes?: number;
   linkToCopy: string;
   likePost: () => void;
+  liked?: boolean;
 }
 
 export function PostToolBar(props: Props) {
@@ -23,12 +24,15 @@ export function PostToolBar(props: Props) {
       <Group spacing={"md"}>
         <div className="flex flex-row items-center justify-center">
           <ActionIcon onClick={props.likePost}>
-            <IconHeart size={22} color={theme.colors.red[6]} stroke={1.5} />
+            <IconHeart
+              size={22}
+              color={theme.colors.red[6]}
+              stroke={1.5}
+              fill={props.liked ? theme.colors.red[6] : undefined}
+            />
           </ActionIcon>
-          {props.likes!=undefined ? (
-            <Text weight={"lighter"}>
-              {numberWithCommas(props.likes)}
-            </Text>
+          {props.likes != undefined ? (
+            <Text weight={"lighter"}>{numberWithCommas(props.likes)}</Text>
           ) : null}
         </div>
         {props.showComment ? (
