@@ -25,7 +25,8 @@ export interface SinglePost {
       username: string;
       profileImage: string;
     };
-    likedBy:number
+    likedBy: number;
+    liked: boolean;
   };
   userInfo?: {
     isAdmin: boolean;
