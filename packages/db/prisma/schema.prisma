@@ -31,6 +31,7 @@ model User {
   createdAt     DateTime        @default(now())
   followers     Follows[]       @relation("following")
   following     Follows[]       @relation("follower")
+  Blog          Blog[]
 }
 
 model Notifications {
@@ -123,4 +124,15 @@ model Follows {
   followingId String
 
   @@id([followerId, followingId])
+}
+
+model Blog {
+  id        String   @id @unique @default(cuid())
+  title     String
+  author    User     @relation(fields: [userId], references: [id])
+  userId    String
+  content   String
+  tags      String[]
+  ogImage   String?
+  createdAt DateTime @default(now())
 }
