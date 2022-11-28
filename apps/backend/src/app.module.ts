@@ -16,10 +16,11 @@ import { PostActionsController } from './routes/post-actions/post-actions.contro
 import { ProfileController } from './routes/profile/profile.controller';
 import { UpdateProfileController } from './routes/update-profile/update-profile.controller';
 import { VerifyUserService } from './services/verify-user/verify-user.service';
+import { BlogsController } from './routes/blogs/blogs.controller';
 
 @Module({
   imports: [],
-  controllers: [AppController, AuthController, MetadataController, NotificationsController, ForumsController, UploadController, ForumsPostController, PostActionsController, ProfileController, UpdateProfileController],
+  controllers: [AppController, AuthController, MetadataController, NotificationsController, ForumsController, UploadController, ForumsPostController, PostActionsController, ProfileController, UpdateProfileController, BlogsController],
   providers: [AppService, AuthService, PrismaService, NotificationsGateway, NotificationsService, ForumsService, VerifyUserService],
 })
 export class AppModule {}
