@@ -134,9 +134,15 @@ export class ForumsPostController {
       },
     });
     const likedBy = postInfo.likedBy.length;
+    const isPostLikedByUser =
+      jwt === undefined ? false : postInfo.likedBy.includes(jwt.id);
+      console.log(jwt.id)
+      console.log(postInfo.likedBy)
+      console.log(postInfo.likedBy.includes(jwt.id))
     delete postInfo.likedBy;
     const res: Record<string, any> = { post: postInfo };
     res['post']['likedBy'] = likedBy;
+    res['post']['liked'] = isPostLikedByUser;
     if (jwt !== undefined) {
       const { id } = jwt;
       const user = await this.prisma.prisma.forumMember.findFirst({
