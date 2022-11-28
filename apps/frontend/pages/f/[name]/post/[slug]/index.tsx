@@ -30,6 +30,7 @@ const PostsPage: NextPage<{
   const { query } = useRouter();
   const [likes, setLikes] = useState(pageProps.post.likedBy || 0);
   useEffect(() => {
+    console.log(pageProps.post);
     if (opened == true) {
       setOpened(false);
     }
@@ -86,7 +87,11 @@ const PostsPage: NextPage<{
             token: readCookie("token")!,
           }).then((data) => {
             if (data == null) {
-              return setLikes((o) => o + 1);
+              if (pageProps.post.liked === false) {
+                return setLikes((o) => o + 1);
+              } else if (pageProps.post.liked === true) {
+                return setLikes((o) => o - 1);
+              }
             }
             return showNotification({
               message: data,
@@ -95,6 +100,7 @@ const PostsPage: NextPage<{
           })
         }
         likes={likes}
+        liked={pageProps.post.liked}
       />
     </Container>
   );
