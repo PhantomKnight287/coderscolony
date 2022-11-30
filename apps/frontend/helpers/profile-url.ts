@@ -11,3 +11,7 @@ export const profileImageResolver = ({
       : `/images/${profileURL}`
     : `https://avatars.dicebear.com/api/big-smile/${username}.svg`;
 };
+
+export const imageResolver = (url: string) => {
+  return `/images/${url}`;
+};
