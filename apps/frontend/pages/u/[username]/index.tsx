@@ -22,7 +22,7 @@ import {
 } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import styles from "@styles/username.module.scss";
 import { SingleFileDropzone } from "@components/dropzones/single";
 import {
@@ -55,7 +55,7 @@ const UsernamePage: NextPage<{
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showProfileImageModal, setShowProfileImageModal] = useState(false);
   const [profileImage, setProfileImage] = useState<File>();
-  const { isDirty, getInputProps, onSubmit, resetDirty } = useForm({
+  const { isDirty, getInputProps, onSubmit, resetDirty, values } = useForm({
     initialValues: {
       oneLiner: user.oneLiner,
       name: user.name,
@@ -80,6 +80,8 @@ const UsernamePage: NextPage<{
       setGlobalUser({ payload: data, type: "SetUser" });
     }
   }
+
+  const ref = useRef<HTMLFormElement>(null);
 
   return (
     <>
@@ -187,11 +189,14 @@ const UsernamePage: NextPage<{
           </div>
         </div>
         <div className="mt-10">
-          <ProfileTabs />
+          {typeof window !== "undefined" ? <ProfileTabs /> : null}
         </div>
       </Container>
       <Modal
-        onClose={() => setModalOpened((o) => !o)}
+        onClose={() => {
+          fetchProfileAndUpdateState();
+          setModalOpened((o) => !o);
+        }}
         opened={modalOpened}
         centered
         overlayColor={
@@ -277,6 +282,7 @@ const UsernamePage: NextPage<{
           Upload An Image
         </div>
         <form
+          ref={ref}
           onSubmit={onSubmit((d) => {
             if (isDirty("name")) {
               updateName(user.username!, d.name!, readCookie("token")!).then(
@@ -307,7 +313,24 @@ const UsernamePage: NextPage<{
         >
           <Button
             variant="outline"
-            onClick={() => setModalOpened((o) => !o)}
+            onClick={() => {
+              if (isDirty("name")) {
+                updateName(
+                  user.username!,
+                  values.name!,
+                  readCookie("token")!
+                ).then(fetchProfileAndUpdateState);
+              }
+              if (isDirty("oneLiner")) {
+                updateOneLiner(
+                  user.username!,
+                  values.oneLiner!,
+                  readCookie("token")!
+                ).then(fetchProfileAndUpdateState);
+              }
+              resetDirty();
+              setModalOpened((o) => !o);
+            }}
             color="green"
           >
             Confirm
