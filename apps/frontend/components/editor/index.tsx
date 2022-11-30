@@ -41,8 +41,16 @@ interface Props {
   content: string;
   setContent: Dispatch<SetStateAction<string>>;
   createPost: (content: string, slug: string) => void | Promise<boolean>;
+  slug?: string;
+  clickOnSendIconHandler?: () => void;
 }
-export function Editor({ content, setContent, createPost }: Props) {
+export function Editor({
+  content,
+  setContent,
+  createPost,
+  slug,
+  clickOnSendIconHandler,
+}: Props) {
   const [opened, setOpened] = useState(false);
   const [file, setFile] = useState<File>();
   const [submitModalOpened, setSubmitModalOpened] = useState(false);
@@ -72,7 +80,10 @@ export function Editor({ content, setContent, createPost }: Props) {
             },
           })
           .then((d) => d.data)
-          .then((d) => resolve({ url: `/images/${d.path}` }))
+          .then((d) => {
+            setFile(undefined);
+            resolve({ url: `/images/${d.path}` });
+          })
           .catch(() => reject(new Error("Upload failed")));
       });
     },
@@ -80,10 +91,10 @@ export function Editor({ content, setContent, createPost }: Props) {
   );
   const formState = useForm({
     initialValues: {
-      slug: "",
+      slug: slug || "",
     },
   });
-  const handler = () => {
+  const _handler = () => {
     if (!content)
       return showNotification({
         message: "Please Type Content of the Post",
@@ -91,7 +102,7 @@ export function Editor({ content, setContent, createPost }: Props) {
       });
     setSubmitModalOpened(true);
   };
-
+  const handler = clickOnSendIconHandler ?? _handler;
   return (
     <>
       <Tabs defaultValue={"editor"}>
