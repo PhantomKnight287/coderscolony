@@ -127,13 +127,14 @@ model Follows {
 }
 
 model Blog {
-  id        String   @id @unique @default(cuid())
-  slug      String
-  title     String
-  author    User     @relation(fields: [userId], references: [id])
-  userId    String
-  content   String
-  tags      String[]
-  ogImage   String?
-  createdAt DateTime @default(now())
+  id          String   @id @unique @default(cuid())
+  slug        String
+  title       String
+  description String   @default("No Description")
+  author      User     @relation(fields: [userId], references: [id])
+  userId      String
+  content     String
+  tags        String[]
+  ogImage     String?
+  createdAt   DateTime @default(now())
 }
