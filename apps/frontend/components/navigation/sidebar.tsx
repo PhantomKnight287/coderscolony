@@ -12,7 +12,7 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import { NavbarLinksGroup } from "@components/collapsible";
-import { IconMessageCircle2 } from "@tabler/icons";
+import { IconMessageCircle2, IconPencil } from "@tabler/icons";
 import { openConfirmModal } from "@mantine/modals";
 import { useForm } from "@mantine/form";
 import axios from "axios";
@@ -163,6 +163,37 @@ export function Sidebar() {
                   </UnstyledButton>
                 ),
                 link: "/f",
+              },
+            ]}
+          />
+          <NavbarLinksGroup
+            icon={IconPencil}
+            label="Blogs"
+            initiallyOpened={true}
+            links={[
+              {
+                id: "CREATE",
+                label: (
+                  <UnstyledButton
+                    color="blue"
+                    className="flex flex-row items-center justify-center  hover:bg-[#233449] py-2 px-4 rounded-lg ml-2 min-w-[100px]"
+                  >
+                    Create
+                  </UnstyledButton>
+                ),
+                link: "/b/create",
+              },
+              {
+                id: "LIST",
+                label: (
+                  <UnstyledButton
+                    color="blue"
+                    className="flex flex-row items-center justify-center  hover:bg-[#233449] py-2 px-4 rounded-lg ml-2 min-w-[100px]"
+                  >
+                    View All
+                  </UnstyledButton>
+                ),
+                link: "/b",
               },
             ]}
           />
