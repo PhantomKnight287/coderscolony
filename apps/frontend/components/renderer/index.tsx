@@ -111,6 +111,9 @@ export const Renderer: FC<{ children: string }> = ({ children }) => {
       ol: ({ node, ...props }) => (
         <ol {...props} className={"list-decimal ml-4"} />
       ),
+      a: ({ node, ...props }) => {
+        return <a {...props} target="blank" rel="noreferrer noopener" className="hover:underline text-blue-500" />;
+      },
     };
   }, []);
   return (
