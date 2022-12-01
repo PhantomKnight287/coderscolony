@@ -8,7 +8,8 @@ import { useEffect } from "react";
 export function useHydrateUserContext() {
   const dispatch = useUserDispatch();
   const { replace } = useRouter();
-  useEffect(() => {
+
+  function fetchProfile() {
     const cookie = readCookie("token");
     if (!cookie) return;
     axios
@@ -34,5 +35,10 @@ export function useHydrateUserContext() {
             )}`
           );
       });
+  }
+
+  useEffect(() => {
+    fetchProfile();
   }, []);
+  return fetchProfile;
 }
