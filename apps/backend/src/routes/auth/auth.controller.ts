@@ -17,6 +17,7 @@ import { Login, SignUp } from 'src/validators/auth.validator';
 import { config } from 'dotenv';
 import { Response as RES } from 'express';
 import { Token } from 'src/decorators/token/token.decorator';
+import { DecodedJWT } from 'src/types/jwt';
 config();
 
 @Controller('auth')
@@ -134,5 +135,24 @@ export class AuthController {
       throw new HttpException('User Not Found', HttpStatus.NOT_FOUND);
     }
     return res.status(200).json({ ...user });
+  }
+  @Get('settings')
+  async sendProfileInfo(@Token({ validate: true }) { id }: DecodedJWT) {
+    const profile = await this.prisma.prisma.user.findFirst({
+      where: { id },
+      select: {
+        email: true,
+        bannerColor: true,
+        bannerImage: true,
+        profileImage: true,
+        name: true,
+        oneLiner: true,
+        tags: true,
+        username: true,
+      },
+    });
+    if (!profile)
+      throw new HttpException('No Profile Data Found', HttpStatus.NOT_FOUND);
+    return profile;
   }
 }
