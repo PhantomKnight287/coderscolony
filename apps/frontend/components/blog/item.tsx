@@ -1,24 +1,21 @@
-import { Blog } from "db";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import updateLocale from "dayjs/plugin/updateLocale";
+import { imageResolver, profileImageResolver } from "@helpers/profile-url";
 import {
-  ActionIcon,
   Avatar,
-  Badge,
-  Card,
-  CardProps,
-  Center,
   createStyles,
   Group,
   Image,
+  Paper,
   Skeleton,
   Text,
+  useMantineColorScheme,
 } from "@mantine/core";
-import { imageResolver, profileImageResolver } from "@helpers/profile-url";
 import { useState } from "react";
-import styles from "./item.module.scss";
-import { IconBookmark, IconHeart, IconShare } from "@tabler/icons";
+import { Blogs } from "~types/blog";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import updateLocale from "dayjs/plugin/updateLocale";
+import clsx from "clsx";
+import { useRouter } from "next/router";
 
 dayjs.extend(relativeTime);
 dayjs.extend(updateLocale);
@@ -28,137 +25,94 @@ dayjs.updateLocale("en", {
     future: "in %s",
     past: "%s ago",
     s: "few s",
-    m: "1 min",
-    mm: "%d mins",
-    h: "1 hr",
-    hh: "%d hrs",
-    d: "1 d",
-    dd: "%d d",
-    M: "a month",
-    MM: "%d months",
-    y: "a yr",
-    yy: "%d yrs",
+    m: "1min",
+    mm: "%dmins",
+    h: "1hr",
+    hh: "%dhrs",
+    d: "1d",
+    dd: "%dd",
+    M: "amonth",
+    MM: "%dmonths",
+    y: "ayr",
+    yy: "%dyrs",
   },
 });
 
 const useStyles = createStyles((theme) => ({
-  card: {
-    position: "relative",
-    backgroundColor:
-      theme.colorScheme === "dark" ? theme.colors.dark[7] : theme.white,
-    display: "flex",
-    flexDirection: "column",
-    transition: "all 150ms ease",
-    ":hover": {
-      scale: "1.1",
+  timestamp: {
+    "::before": {
+      content: "'•'",
+      fontSize: "10px",
+      marginRight: "4px",
     },
-  },
-
-  rating: {
-    position: "absolute",
-    top: theme.spacing.xs,
-    right: theme.spacing.xs + 2,
-    pointerEvents: "none",
-  },
-
-  title: {
-    display: "block",
-    marginTop: theme.spacing.md,
-    marginBottom: theme.spacing.xs / 2,
-  },
-
-  action: {
-    backgroundColor:
-      theme.colorScheme === "dark"
-        ? theme.colors.dark[6]
-        : theme.colors.gray[0],
-    ...theme.fn.hover({
-      backgroundColor:
-        theme.colorScheme === "dark"
-          ? theme.colors.dark[5]
-          : theme.colors.gray[1],
-    }),
-  },
-
-  footer: {
-    marginTop: "auto",
   },
 }));
 
-export function BlogPost({
-  createdAt,
-  author,
-  slug,
-  ogImage,
-  title,
-  classname,
-  description,
-  ...others
-}: Partial<Blog> & {
-  author: { username: string; id: string; profileImage: string };
-  classname?: string;
-} & Partial<CardProps>) {
-  const { classes, cx, theme } = useStyles();
-  const linkProps = {
-    href: `/u/${author.username}/blog/${slug}`,
-  };
-
+export default function BlogItem(props: Blogs) {
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [avatarLoaded, setAvatarLoaded] = useState(false);
+  const { classes } = useStyles();
+  const { colorScheme } = useMantineColorScheme();
+  const { push } = useRouter();
+  
   return (
-    <Card
+    <Paper
       withBorder
-      radius="md"
-      className={cx(classes.card, classname)}
-      {...others}
+      p="lg"
+      className={clsx(`my-4 cursor-pointer`)}
+      onClick={() => push(`/u/${props.author.username}/blog/${props.slug}`)}
     >
-      <Card.Section>
-        <Skeleton visible={!imageLoaded}>
-          <a {...linkProps}>
-            <Image
-              src={imageResolver(ogImage!)}
-              onLoad={() => setImageLoaded(true)}
-              height={180}
-            />
-          </a>
-        </Skeleton>
-      </Card.Section>
-
-      <Text className={classes.title} weight={500} component="a" {...linkProps}>
-        {title}
-      </Text>
-
-      <Text size="sm" color="dimmed" lineClamp={4} mb="md">
-        {description}
-      </Text>
-
-      <Group position="apart" className={classes.footer}>
-        <Center>
+      <Group
+        position="left"
+        style={{
+          gap: "8px",
+        }}
+      >
+        <Skeleton circle visible={!avatarLoaded}>
           <Avatar
             src={profileImageResolver({
-              profileURL: author.profileImage,
-              username: author.username,
+              profileURL: props.author.profileImage!,
+              username: props.author.username,
             })}
-            size={24}
+            size="sm"
             radius="xl"
-            mr="xs"
+            onLoad={() => setAvatarLoaded(true)}
           />
-          <Text size="sm" inline>
-            {author.username}
-          </Text>
-        </Center>
-
-        {/* <Group spacing={8} mr={0}>
-          <ActionIcon className={classes.action}>
-            <IconHeart size={16} color={theme.colors.red[6]} />
-          </ActionIcon>
-          <ActionIcon className={classes.action}>
-            <IconBookmark size={16} color={theme.colors.yellow[7]} />
-          </ActionIcon>
-          <ActionIcon className={classes.action}>
-            <IconShare size={16} />
-          </ActionIcon>
-        </Group> */}
+        </Skeleton>
+        <Text inline size="sm">
+          {props.author.name}{" "}
+        </Text>
+        <Text inline size="sm" color="dimmed" className={classes.timestamp}>
+          {dayjs(props.createdAt).fromNow(false)}
+        </Text>
       </Group>
-    </Card>
+      <div className="flex flex-row mt-[12px]">
+        <div className="flex flex-col flex-1">
+          <h1
+            className={clsx("text-2xl font-bold font-['Inter'] pb-[8px]", {
+              "text-white": colorScheme === "dark",
+            })}
+          >
+            {props.title}
+          </h1>
+          <Text
+            lineClamp={4}
+            className={clsx("", {
+              "text-gray-400": colorScheme === "dark",
+              "text-gray-700": colorScheme === "light",
+            })}
+          >
+            {props.description}
+          </Text>
+        </div>
+        <Skeleton visible={!imageLoaded} className="max-w-fit">
+          <Image
+            src={imageResolver(props.ogImage!)}
+            className={clsx("max-w-[150px] max-h-[150px]")}
+            onLoad={() => setImageLoaded(true)}
+          />
+        </Skeleton>
+      </div>
+    </Paper>
   );
 }
