@@ -32,6 +32,7 @@ model User {
   followers     Follows[]       @relation("following")
   following     Follows[]       @relation("follower")
   Blog          Blog[]
+  tags          Tags[]
 }
 
 model Notifications {
@@ -134,7 +135,18 @@ model Blog {
   author      User     @relation(fields: [userId], references: [id])
   userId      String
   content     String
-  tags        String[]
+  tags        Tags[]
   ogImage     String?
   createdAt   DateTime @default(now())
+}
+
+model Tags {
+  id     String  @id @unique @default(cuid())
+  name   String
+  logo   String
+  color  String
+  Blog   Blog?   @relation(fields: [blogId], references: [id])
+  blogId String?
+  User   User?   @relation(fields: [userId], references: [id])
+  userId String?
 }
