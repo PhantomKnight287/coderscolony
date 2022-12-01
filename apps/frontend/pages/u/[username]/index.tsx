@@ -6,8 +6,11 @@ import {
   Button,
   ColorPicker,
   Container,
+  createStyles,
   Group,
+  Image,
   Modal,
+  Skeleton,
   TextInput,
   useMantineColorScheme,
   useMantineTheme,
@@ -17,7 +20,10 @@ import clsx from "clsx";
 import { User } from "db";
 import {
   GetServerSideProps,
+  GetStaticPaths,
+  GetStaticProps,
   InferGetServerSidePropsType,
+  InferGetStaticPropsType,
   NextPage,
 } from "next";
 import Link from "next/link";
@@ -40,9 +46,18 @@ import { uploadSingleFile } from "@services/upload";
 import { useForm } from "@mantine/form";
 import { useUserDispatch } from "@hooks/user";
 import { ProfileTabs } from "@components/profile/tabs";
+import { imageResolver } from "@helpers/profile-url";
+import { useIntersection } from "@mantine/hooks";
+
+const useStyles = createStyles((theme) => ({
+  image: {
+    objectFit: "cover",
+    maxHeight: "300px",
+  },
+}));
 
 const UsernamePage: NextPage<{
-  pageProps: InferGetServerSidePropsType<typeof getServerSideProps>;
+  pageProps: InferGetStaticPropsType<typeof getStaticProps>;
 }> = ({ pageProps }) => {
   const { colorScheme } = useMantineColorScheme();
   const { opened, setOpened } = useSidebar();
@@ -61,7 +76,7 @@ const UsernamePage: NextPage<{
       name: user.name,
     },
   });
-
+  const { classes } = useStyles();
   useEffect(() => {
     if (opened === true) {
       return setOpened(false);
@@ -80,8 +95,8 @@ const UsernamePage: NextPage<{
       setGlobalUser({ payload: data, type: "SetUser" });
     }
   }
-
-  const ref = useRef<HTMLFormElement>(null);
+  const ref = useRef<HTMLFormElement>();
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   return (
     <>
@@ -89,24 +104,31 @@ const UsernamePage: NextPage<{
         description={`${user.name} on CodersColony`}
         title={`${user.name} | @${user.username} `}
       />
-      {user.bannerColor || user.bannerImage ? (
-        <div className="flex flex-col items-center justify-center">
-          <div
-            className={clsx("w-[90vw] h-[300px] rounded-md ", {})}
-            style={{
-              backgroundColor: user.bannerImage
-                ? undefined
-                : (user.bannerColor as string | undefined),
-              backgroundImage: `url(/images/${user.bannerImage})`,
-              backgroundRepeat: "no-repeat",
-              backgroundPosition: "center",
-              backgroundSize: "cover",
-            }}
-          ></div>
-        </div>
-      ) : null}
       <Container>
-        <div className="w-max h-max mt-[-4rem] flex items-center justify-center">
+        {user.bannerColor || user.bannerImage ? (
+          <div className="flex flex-col items-center justify-center">
+            {user.bannerImage ? (
+              <Skeleton visible={!imageLoaded}>
+                <Image
+                  classNames={{
+                    image: classes.image,
+                  }}
+                  onLoad={() => setImageLoaded(true)}
+                  src={imageResolver(user.bannerImage)}
+                  className="rounded-md overflow-hidden object-cover"
+                />
+              </Skeleton>
+            ) : user.bannerColor ? (
+              <div
+                className="rounded-md overflow-hidden max-h-[300px] w-[100%]"
+                style={{
+                  backgroundColor: user.bannerColor,
+                }}
+              ></div>
+            ) : null}
+          </div>
+        ) : null}
+        <div className="w-max h-max mt-[-5rem] flex items-center justify-center">
           <Avatar
             src={
               user.profileImage
@@ -117,75 +139,80 @@ const UsernamePage: NextPage<{
             }
             size={160}
             radius={80}
-            className="bg-[#171718] border-4 border-[#171718]"
+            className="bg-[#171718] border-4 ml-[20px] border-[#171718]"
           />
         </div>
-        <div className="flex items-center text-[16px] mt-5 font-[700] leading-[24px]">
-          <div className="gap-[4px] flex items-center font-[700]">
+        <div className="ml-[20px]">
+          <div className="flex items-center text-[16px] mt-5 font-[700] leading-[24px]">
+            <div className="gap-[4px] flex items-center font-[700]">
+              <p
+                className={clsx("mr-[4px] ml-3", {
+                  "text-white": colorScheme === "dark",
+                })}
+              >
+                {user.name}
+              </p>
+            </div>
+            {user.edit ? (
+              <div className="ml-auto">
+                <Button
+                  variant="outline"
+                  color={colorScheme == "dark" ? "teal" : undefined}
+                  onClick={() => setModalOpened((o) => !o)}
+                >
+                  Edit Profile
+                </Button>
+              </div>
+            ) : null}
+          </div>
+          <div className="flex flex-row items-center justify-start ml-3 gap-8">
+            <span
+              className={clsx("text-[13px] leading-[18px]", {
+                "text-gray-500": colorScheme === "dark",
+                "text-[#666666]": colorScheme === "light",
+              })}
+            >
+              @{user.username}
+            </span>
+          </div>
+          {user.oneLiner ? (
             <p
-              className={clsx("mr-[4px] ml-3", {
+              className={clsx("break-words ml-3 mt-4 leading-[24px]", {
                 "text-white": colorScheme === "dark",
               })}
             >
-              {user.name}
+              {user.oneLiner}
             </p>
-          </div>
-          {user.edit ? (
-            <div className="ml-auto">
-              <Button
-                variant="outline"
-                color={colorScheme == "dark" ? "teal" : undefined}
-                onClick={() => setModalOpened((o) => !o)}
-              >
-                Edit Profile
-              </Button>
-            </div>
           ) : null}
-        </div>
-        <div className="flex flex-row items-center justify-start ml-3 gap-8">
-          <span
-            className={clsx("text-[13px] leading-[18px]", {
-              "text-gray-500": colorScheme === "dark",
-              "text-[#666666]": colorScheme === "light",
-            })}
-          >
-            @{user.username}
-          </span>
-        </div>
-        {user.oneLiner ? (
-          <p
-            className={clsx("break-words ml-3 mt-4 leading-[24px]", {
-              "text-white": colorScheme === "dark",
-            })}
-          >
-            {user.oneLiner}
-          </p>
-        ) : null}
-        <div className="ml-3 mt-5 flex items-center">
-          <div className="flex-wrap items-center flex gap-[8px]">
-            <Link href={`${asPath}/followers`}>
-              <span
-                className={clsx("text-[13px] leading-[18px] hover:underline", {
-                  "text-gray-300": colorScheme === "dark",
-                  "text-[#666666]": colorScheme === "light",
-                })}
-              >
-                {user.followers} Followers
-              </span>
-            </Link>
-            <span
-              className={clsx(
-                `text-[13px] leading-[18px] ${styles.following}`,
-                {
-                  "text-gray-300": colorScheme === "dark",
-                  "text-[#666666]": colorScheme === "light",
-                }
-              )}
-            >
-              <Link href={`${asPath}/following`} className="hover:underline ">
-                {user.following} Following
+          <div className="ml-3 mt-5 flex items-center">
+            <div className="flex-wrap items-center flex gap-[8px]">
+              <Link href={`${asPath}/followers`}>
+                <span
+                  className={clsx(
+                    "text-[13px] leading-[18px] hover:underline",
+                    {
+                      "text-gray-300": colorScheme === "dark",
+                      "text-[#666666]": colorScheme === "light",
+                    }
+                  )}
+                >
+                  {user.followers} Followers
+                </span>
               </Link>
-            </span>
+              <span
+                className={clsx(
+                  `text-[13px] leading-[18px] ${styles.following}`,
+                  {
+                    "text-gray-300": colorScheme === "dark",
+                    "text-[#666666]": colorScheme === "light",
+                  }
+                )}
+              >
+                <Link href={`${asPath}/following`} className="hover:underline ">
+                  {user.following} Following
+                </Link>
+              </span>
+            </div>
           </div>
         </div>
         <div className="mt-10">
@@ -282,7 +309,7 @@ const UsernamePage: NextPage<{
           Upload An Image
         </div>
         <form
-          ref={ref}
+          ref={ref as any}
           onSubmit={onSubmit((d) => {
             if (isDirty("name")) {
               updateName(user.username!, d.name!, readCookie("token")!).then(
@@ -437,36 +464,42 @@ const UsernamePage: NextPage<{
   );
 };
 
-export const getServerSideProps: GetServerSideProps<
+export const getStaticPaths: GetStaticPaths = async () => {
+  const usernames: { username: string }[] = await (
+    await fetch(`${process.env.API_URL}/static/profiles`)
+  ).json();
+  return {
+    fallback: "blocking",
+    paths: usernames.map((username) => ({ params: username })),
+  };
+};
+
+export const getStaticProps: GetStaticProps<
   Partial<User & { edit: boolean; followers: number; following: number }>
-> = async ({ query, req: { cookies, headers } }) => {
-  const token = cookies["token"];
-  const header: Record<string, string> = {};
-  if (token) header.authorization = `Bearer ${token}`;
-  const data = await axios
-    .get(
-      `${process.env.NODE_ENV !== "production" ? "http" : "https"}://${
-        headers.host
-      }/api/profile/${query.username}`,
-      { headers: header }
-    )
-    .then((d) => d.data)
-    .catch((err) => ({
-      status: err?.response?.status || 500,
-      message: err?.response?.data?.message || "An Error Occured",
-    }));
-  if ("status" in data)
+> = async ({ params }) => {
+  const data = await fetch(
+    `${process.env.API_URL}/profile/${params!.username}`
+  ).catch(() => null);
+  if (data === null) {
     return {
       redirect: {
-        destination: `/error/${data.status}?message=${encodeURIComponent(
-          data.message
-        )}`,
+        destination: "/404",
         permanent: false,
       },
     };
-  console.log(data);
+  }
+  if (data.status == 404) {
+    return {
+      redirect: {
+        destination: "/404",
+        permanent: false,
+      },
+    };
+  }
   return {
-    props: data,
+    props: {
+      ...(await data.json()),
+    },
   };
 };
 
