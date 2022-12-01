@@ -35,8 +35,8 @@ export default function App(props: AppProps) {
     setColorScheme(value || (colorScheme === "dark" ? "light" : "dark"));
 
   return (
-    <QueryClientProvider client={client}>
-      <SidebarProvider>
+    <SidebarProvider>
+      <QueryClientProvider client={client}>
         <DrawerProvider>
           <UserProvider>
             <ColorSchemeProvider
@@ -105,7 +105,7 @@ export default function App(props: AppProps) {
             </ColorSchemeProvider>
           </UserProvider>
         </DrawerProvider>
-      </SidebarProvider>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </SidebarProvider>
   );
 }
