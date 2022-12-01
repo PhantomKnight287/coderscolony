@@ -9,6 +9,7 @@ import { useMantineColorScheme } from "@mantine/core";
 import { slugify } from "@helpers/slugify";
 import rehypeRaw from "rehype-raw";
 import remarkImages from "remark-images";
+import clsx from "clsx";
 export const Renderer: FC<{ children: string }> = ({ children }) => {
   const { colorScheme } = useMantineColorScheme();
   const components:
@@ -112,22 +113,32 @@ export const Renderer: FC<{ children: string }> = ({ children }) => {
         <ol {...props} className={"list-decimal ml-4"} />
       ),
       a: ({ node, ...props }) => {
-        return <a {...props} target="blank" rel="noreferrer noopener" className="hover:underline text-blue-500" />;
+        return (
+          <a
+            {...props}
+            target="blank"
+            rel="noreferrer noopener"
+            className="hover:underline text-blue-500"
+          />
+        );
       },
     };
   }, []);
   return (
-    <ReactMarkdown
-      remarkPlugins={[remarkGfm, remarkImages]}
-      components={components}
-      skipHtml={false}
-      rehypePlugins={[
-        rehypeRaw,
-        // rehypeSanitize,
-        // rehypeHighlight,
-      ]}
-      children={children}
-      className={styles.renderer}
-    />
+    <div
+      className={clsx("", {
+        "text-[#eaeaea]": colorScheme === "dark",
+      })}
+    >
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm, remarkImages]}
+        components={components}
+        skipHtml={false}
+        rehypePlugins={[rehypeRaw]}
+        className={styles.renderer}
+      >
+        {children}
+      </ReactMarkdown>
+    </div>
   );
 };
