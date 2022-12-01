@@ -18,7 +18,7 @@
       "@components/*": ["./components/*"],
       "@styles/*": ["./styles/*"],
       "@services/*": ["./services/*"],
-      "@types/*": ["./types/*"],
+      "~types/*": ["./types/*"],
       "@helpers/*": ["./helpers/*"],
       "@hooks/*": ["./hooks/*"]
     }
