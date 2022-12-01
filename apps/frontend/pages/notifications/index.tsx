@@ -61,7 +61,7 @@ function Notifications() {
       {status === "loading" ? (
         <p>Loading...</p>
       ) : status === "error" ? (
-        <p>Error: {error?.message}</p>
+        <p>Error: {(error as Error)?.message}</p>
       ) : (
         <>
           {data?.pages.map((group, i) => (
