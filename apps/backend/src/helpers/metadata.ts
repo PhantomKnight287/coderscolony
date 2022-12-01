@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { blacklist } from './blacklist';
 import * as domino from 'domino';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
