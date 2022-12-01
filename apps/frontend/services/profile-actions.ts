@@ -197,3 +197,10 @@ export async function updateName(
     ...(data as any).data,
   };
 }
+export async function updateProfile(data: any, token: string) {
+  return axios.post("/api/profile/update", data, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
