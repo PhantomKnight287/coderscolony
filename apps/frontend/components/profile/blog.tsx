@@ -1,9 +1,11 @@
-import { BlogPost } from "@components/blog/item";
-import { SimpleGrid } from "@mantine/core";
+import { BlogPost } from "@components/blog/card";
+import { Button, SimpleGrid } from "@mantine/core";
+import { useIntersection } from "@mantine/hooks";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Blog } from "db";
 import { useRouter } from "next/router";
-import { Fragment, useEffect } from "react";
+import { Fragment, useEffect, useRef } from "react";
+import { Blogs } from "~types/blog";
 
 export function Blogs() {
   const { query, isReady } = useRouter();
@@ -23,27 +25,28 @@ export function Blogs() {
     isFetchingNextPage,
     status,
   } = useInfiniteQuery<{
-    blogs: Array<
-      Partial<Blog> & {
-        author: { username: string; id: string; profileImage: string };
-      }
-    >;
+    blogs: Array<Blogs>;
     next?: number;
   }>(["blogs"], (d) => fetcher({ pageParams: d.pageParam }), {
     getNextPageParam: (lastPage, pages) => lastPage.next,
     enabled: isReady,
   });
+  const containerRef = useRef<HTMLDivElement>();
+  const { ref, entry } = useIntersection({
+    root: containerRef.current,
+    threshold: 1,
+  });
 
   useEffect(() => {
-    console.log(data);
-  }, []);
+    if (entry?.isIntersecting) fetchNextPage();
+  }, [entry?.isIntersecting]);
 
   return status === "loading" ? (
     <p>Loading...</p>
   ) : status === "error" ? (
     <p>Error: {(error as Error).message}</p>
   ) : (
-    <>
+    <div ref={containerRef as any}>
       {data.pages.map((group, i) => (
         <SimpleGrid
           cols={3}
@@ -62,18 +65,23 @@ export function Blogs() {
         </SimpleGrid>
       ))}
       <div>
-        <button
-          onClick={() => fetchNextPage()}
-          disabled={!hasNextPage || isFetchingNextPage}
-        >
-          {isFetchingNextPage
-            ? "Loading more..."
-            : hasNextPage
-            ? "Load More"
-            : "Nothing more to load"}
-        </button>
+        {isFetchingNextPage ? (
+          "Loading more..."
+        ) : hasNextPage ? (
+          <Button
+            variant="outline"
+            color="green"
+            disabled={!hasNextPage || isFetchingNextPage}
+          >
+            Load More
+          </Button>
+        ) : (
+          "Nothing more to load"
+        )}
       </div>
-      <div>{isFetching && !isFetchingNextPage ? "Fetching..." : null}</div>
-    </>
+      <div ref={ref}>
+        {isFetching && !isFetchingNextPage ? "Fetching..." : null}
+      </div>
+    </div>
   );
 }
