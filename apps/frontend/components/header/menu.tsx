@@ -9,6 +9,7 @@ import {
   IconTrash,
   IconArrowsLeftRight,
   IconPlus,
+  IconUser,
 } from "@tabler/icons";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -46,11 +47,16 @@ export function UserMenu() {
           <Menu.Label>Application</Menu.Label>
           <Menu.Item
             onClick={() => push(`/u/${username}`)}
-            icon={<IconSettings size={14} />}
+            icon={<IconUser size={14} />}
           >
             Profile
           </Menu.Item>
-          <Menu.Item icon={<IconMessageCircle size={14} />}>Messages</Menu.Item>
+          <Menu.Item
+            icon={<IconSettings size={14} />}
+            onClick={() => push(`/u/${username}/settings`)}
+          >
+            Settings
+          </Menu.Item>
           <Menu.Item icon={<IconPhoto size={14} />}>Gallery</Menu.Item>
           <Menu.Item
             icon={<IconSearch size={14} />}
