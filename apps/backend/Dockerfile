@@ -1,0 +1,21 @@
+FROM node:16.18.0-alpine
+
+ARG JWT_SECRET
+ARG SUPABASE_URL
+ARG SUPABASE_SERVICE_KEY
+
+ENV JWT_SECRET=${JWT_SECRET}
+ENV SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+ENV SUPABASE_URL=${SUPABASE_URL}
+
+WORKDIR /app
+COPY . /app/
+
+RUN corepack prepare pnpm@7.14.0 --activate
+
+RUN pnpm i
+
+RUN pnpm build
+
+EXPOSE 5000
+CMD [ "pnpm" ,"start:prod"]
