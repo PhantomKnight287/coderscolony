@@ -1,15 +1,19 @@
 import {
+  Body,
   Controller,
   Get,
   HttpException,
   HttpStatus,
   Param,
+  Post,
   Query,
 } from '@nestjs/common';
 import { verify } from 'jsonwebtoken';
 import { Token } from 'src/decorators/token/token.decorator';
 import { PrismaService } from 'src/services/prisma/prisma.service';
 import { DecodedJWT } from 'src/types/jwt';
+import { UpdateProfileValidator } from 'src/validators/update.validator';
+import { z } from 'zod';
 
 @Controller('profile')
 export class ProfileController {
@@ -104,5 +108,30 @@ export class ProfileController {
     const res: Record<any, any> = { followers };
     if (followers.length > 5) res['next'] = take + 5;
     return res;
+  }
+  @Post('update')
+  async updateProfile(
+    @Token({ validate: true }) { id }: DecodedJWT,
+    @Body() body: z.infer<typeof UpdateProfileValidator>,
+  ) {
+    const data = UpdateProfileValidator.safeParse(body);
+    if (!data.success) {
+      throw new HttpException(
+        (data as any).error.issues[0].message,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const { color, email, name, oneLiner, username } = body;
+    await this.prisma.prisma.user.update({
+      where: { id },
+      data: {
+        bannerColor: color,
+        email,
+        name,
+        oneLiner,
+        username,
+      },
+    });
+    return 'ok';
   }
 }
