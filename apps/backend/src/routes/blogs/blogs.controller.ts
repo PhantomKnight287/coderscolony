@@ -67,7 +67,7 @@ export class BlogsController {
       take: resultsToFetch,
       skip: resultsToFetch > 5 ? resultsToFetch - 5 : undefined,
     });
-    if (!blogs) throw new HttpException('No User Found', HttpStatus.NOT_FOUND);
+    if (!blogs.length) throw new HttpException('No User Found', HttpStatus.NOT_FOUND);
     const res = { blogs: blogs };
     if (blogs.length > 5) {
       res['next'] = resultsToFetch + 5;
@@ -121,13 +121,102 @@ export class BlogsController {
           },
         },
         ogImage,
-        tags,
+        tags: {
+          connect: tags.map((tag) => ({ id: tag })),
+        },
         description,
       },
       select: {
         slug: true,
       },
     });
+    return blog;
+  }
+  @Get('')
+  async getBlogs(@Query('take') take: string) {
+    const resultsToFetch = Number.isNaN(parseInt(take)) ? 5 : parseInt(take);
+    const blogs = await this.prisma.prisma.blog.findMany({
+      where: {},
+      select: {
+        author: {
+          select: {
+            username: true,
+            name: true,
+            profileImage: true,
+          },
+        },
+        createdAt: true,
+        description: true,
+        id: true,
+        ogImage: true,
+        slug: true,
+        title: true,
+        tags: true,
+      },
+      orderBy: [
+        {
+          createdAt: 'desc',
+        },
+      ],
+      take: resultsToFetch,
+      skip: resultsToFetch > 5 ? resultsToFetch - 5 : undefined,
+    });
+    const res = { blogs };
+    if (blogs.length === 5) res['next'] = resultsToFetch + 5;
+
+    return res;
+  }
+  @Get('generate/static')
+  async getBlogList() {
+    const blogs = await this.prisma.prisma.blog.findMany({
+      select: {
+        slug: true,
+        author: {
+          select: {
+            username: true,
+          },
+        },
+      },
+    });
+    return blogs;
+  }
+  @Get(':username/blog/:slug')
+  async getBlogInfo(
+    @Param('username') username: string,
+    @Param('slug') slug: string,
+  ) {
+    slug = slugify(slug);
+
+    const blog = await this.prisma.prisma.blog.findFirst({
+      where: {
+        author: {
+          username: {
+            equals: username,
+            mode: 'insensitive',
+          },
+        },
+        slug: {
+          equals: slug,
+          mode: 'insensitive',
+        },
+      },
+      select: {
+        content: true,
+        author: {
+          select: {
+            username: true,
+            name: true,
+            profileImage: true,
+          },
+        },
+        createdAt: true,
+        description: true,
+        ogImage: true,
+        tags: true,
+        title: true,
+      },
+    });
+    if (!blog) throw new HttpException('No Blog Found', HttpStatus.NOT_FOUND);
     return blog;
   }
 }
