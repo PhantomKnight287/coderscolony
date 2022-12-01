@@ -64,6 +64,7 @@ importers:
       ts-node: ^10.9.1
       tsconfig-paths: 4.1.0
       typescript: ^4.9.3
+      zod: ^3.19.1
     dependencies:
       '@nestjs/common': 9.2.1_yzt46al3aifnexifjjdb4dxxja
       '@nestjs/core': 9.2.1_bvdidj5ygy55apqvtr2jzdleii
@@ -92,6 +93,7 @@ importers:
       rimraf: 3.0.2
       robots-parser: 3.0.0
       rxjs: 7.5.7
+      zod: 3.19.1
     devDependencies:
       '@nestjs/cli': 9.1.5
       '@nestjs/schematics': 9.0.3_typescript@4.9.3
@@ -9299,6 +9301,10 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
     dev: true
+
+  /zod/3.19.1:
+    resolution: {integrity: sha512-LYjZsEDhCdYET9ikFu6dVPGp2YH9DegXjdJToSzD9rO6fy4qiRYFoyEYwps88OseJlPyl2NOe2iJuhEhL7IpEA==}
+    dev: false
 
   /zwitch/2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
