@@ -85,7 +85,7 @@ const UsernamePage: NextPage<{
               </Skeleton>
             ) : user.bannerColor ? (
               <div
-                className="rounded-md overflow-hidden max-h-[300px] w-[100%]"
+                className="rounded-md overflow-hidden max-h-[300px] h-[300px] w-[100%]"
                 style={{
                   backgroundColor: user.bannerColor,
                 }}

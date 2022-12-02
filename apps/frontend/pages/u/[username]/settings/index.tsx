@@ -253,7 +253,13 @@ export default function SettingsPage() {
                   updateProfile(
                     { color, username, name, email, oneLiner },
                     readCookie("token")!
-                  ).then(() => refetch());
+                  ).then(() => {
+                    showNotification({
+                      message: "Profile Updated",
+                      color: "green",
+                    });
+                    refetch();
+                  });
                 }}
               >
                 Save Changes
