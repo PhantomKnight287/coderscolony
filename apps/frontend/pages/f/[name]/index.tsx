@@ -15,7 +15,7 @@ import { showNotification } from "@mantine/notifications";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { ForumMemberRoles } from "db";
-import { GetServerSideProps, InferGetServerSidePropsType } from "next";
+import { GetStaticPaths, GetStaticProps, InferGetStaticPropsType } from "next";
 import { useRouter } from "next/router";
 import { Fragment, useEffect, useRef, useState } from "react";
 import styles from "../../../styles/dynamic-forum-page.module.scss";
@@ -73,7 +73,7 @@ interface ApiData {
 const Forum = ({
   pageProps,
 }: {
-  pageProps: InferGetServerSidePropsType<typeof getServerSideProps>;
+  pageProps: InferGetStaticPropsType<typeof getStaticProps>;
 }) => {
   useHydrateUserContext();
   const { query, isReady, replace, push } = useRouter();
@@ -111,7 +111,7 @@ const Forum = ({
     root: postsContainerRef.current,
     threshold: 1,
   });
-  const { setOpened,opened } = useSidebar();
+  const { setOpened, opened } = useSidebar();
   const createPost = (content: string, slug: string) => {
     const cookie = readCookie("token");
     if (!cookie)
@@ -180,7 +180,7 @@ const Forum = ({
   }, []);
 
   useEffect(() => {
-    setOpened(true)
+    setOpened(true);
     return () => setOpened(false);
   }, [opened]);
 
@@ -299,7 +299,7 @@ const Forum = ({
             >
               {data.description}
             </p>
-            <div className="flex flex-row flex-wrap mt-2 items-center justify-evenly">
+            <div className="flex flex-row flex-wrap mt-2 items-center justify-evenly gap-3">
               <div className="flex flex-row items-center text-[13px]">
                 <IconCalendar size={14} className="mr-2" />
                 <div
@@ -409,26 +409,19 @@ const Forum = ({
 
 export default Forum;
 
-export const getServerSideProps: GetServerSideProps<ApiData> = async ({
-  query,
-  req: { cookies, headers },
-}) => {
-  const token = cookies["token"];
-  const header: Record<string, string> = {};
-  if (token) header.authorization = `Bearer ${token}`;
+export const getStaticPaths: GetStaticPaths = async () => {
+  const forums: Array<{ urlSlug: string }> = await (
+    await fetch(`${process.env.API_URL}/static/forums`)
+  ).json();
+  return {
+    fallback: "blocking",
+    paths: forums.map((f) => ({ params: { name: f.urlSlug } })),
+  };
+};
+
+export const getStaticProps: GetStaticProps<ApiData> = async ({ params }) => {
   const data = await axios
-    .get(
-      token
-        ? `${process.env.NODE_ENV !== "production" ? "http" : "https"}://${
-            headers.host
-          }/api/forums/${query.name}/authenticated`
-        : `${process.env.NODE_ENV !== "production" ? "http" : "https"}://${
-            headers.host
-          }/api/forums/${query.name}`,
-      {
-        headers: header,
-      }
-    )
+    .get(`${process.env.API_URL}/forums/${params!.name!}`)
     .catch((err) => {
       console.log(err.response?.data);
       return null;

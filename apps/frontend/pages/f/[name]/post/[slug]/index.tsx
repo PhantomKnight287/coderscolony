@@ -13,8 +13,9 @@ import { likePost } from "@services/post-actions";
 import { IconArrowLeft } from "@tabler/icons";
 import axios from "axios";
 import {
-  GetServerSideProps,
-  InferGetServerSidePropsType,
+  GetStaticPaths,
+  GetStaticProps,
+  InferGetStaticPropsType,
   NextPage,
 } from "next";
 import Link from "next/link";
@@ -23,7 +24,7 @@ import { useEffect, useState } from "react";
 import { SinglePost } from "../../../../../types/forum-post";
 
 const PostsPage: NextPage<{
-  pageProps: InferGetServerSidePropsType<typeof getServerSideProps>;
+  pageProps: InferGetStaticPropsType<typeof getStaticProps>;
 }> = ({ pageProps }) => {
   useHydrateUserContext();
   const { setOpened, opened } = useSidebar();
@@ -108,26 +109,30 @@ const PostsPage: NextPage<{
 
 export default PostsPage;
 
-export const getServerSideProps: GetServerSideProps<SinglePost> = async ({
-  query,
-  req: { cookies, headers },
+export const getStaticPaths: GetStaticPaths = async () => {
+  const posts: Array<{ Forums: { urlSlug: string }; slug: string }> = await (
+    await fetch(`${process.env.API_URL}/static/posts`)
+  ).json();
+
+  return {
+    fallback: "blocking",
+    paths: posts.map((post) => ({
+      params: { name: post.Forums.urlSlug, slug: post.slug },
+    })),
+  };
+};
+
+export const getStaticProps: GetStaticProps<SinglePost> = async ({
+  params,
 }) => {
-  const token = cookies["token"];
-  const header: Record<string, string> = {};
-  if (token) header.authorization = `Bearer ${token}`;
   const data = await axios
-    .get(
-      `${process.env.NODE_ENV !== "production" ? "http" : "https"}://${
-        headers.host
-      }/api/forums/posts/${query.name}/${query.slug}`,
-      { headers: header }
-    )
+    .get(`${process.env.API_URL}/forums/posts/${params!.name}/${params!.slug}`)
     .then((d) => d.data)
     .catch((err) => null);
   if (data === null)
     return {
       redirect: {
-        destination: `/f/${query.name}`,
+        destination: `/f/${params!.name}`,
         permanent: false,
       },
     };
