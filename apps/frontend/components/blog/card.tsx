@@ -52,6 +52,7 @@ const useStyles = createStyles((theme) => ({
     ":hover": {
       scale: "1.1",
     },
+    height:"100%"
   },
 
   rating: {
