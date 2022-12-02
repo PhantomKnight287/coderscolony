@@ -164,6 +164,7 @@ importers:
       react-dom: 18.2.0
       react-markdown: ^8.0.3
       rehype-raw: ^6.1.1
+      remark-gemoji: ^7.0.1
       remark-gfm: ^3.0.1
       remark-images: ^3.1.0
       sass: ^1.56.1
@@ -201,6 +202,7 @@ importers:
       react-dom: 18.2.0_react@18.2.0
       react-markdown: 8.0.3_iapumuv4e6jcjznwuxpf4tt22e
       rehype-raw: 6.1.1
+      remark-gemoji: 7.0.1
       remark-gfm: 3.0.1
       remark-images: 3.1.0
       showdown: 2.1.0
@@ -264,12 +266,14 @@ importers:
       '@types/react-dom': ^18.0.8
       '@vitejs/plugin-react': ^2.2.0
       editor: workspace:*
+      emoji-tree: ^1.1.2
       react: ^18.2.0
       react-dom: ^18.2.0
       typescript: ^4.6.4
       vite: ^3.2.3
     dependencies:
       editor: link:../../packages/editor
+      emoji-tree: 1.1.2
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
     devDependencies:
@@ -4176,6 +4180,12 @@ packages:
   /emoji-regex/8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
 
+  /emoji-tree/1.1.2:
+    resolution: {integrity: sha512-dIvFd/fwxsCglIgKFkGZUQAUWiMFs4ypjdpcGKR3mjc7tDrXFw+w8LHlXaVw2qLQhRiwbcrjNjKuWi3hBC740g==}
+    dependencies:
+      lodash: 4.17.21
+    dev: false
+
   /encodeurl/1.0.2:
     resolution: {integrity: sha512-TPJXq8JqFaVYm2CWmPvnP2Iyo4ZSM7/QKcSmuMLDObfpH5fi7RUGmd/rTDf+rut/saiDiQEeVTNgAmJEdAOx0w==}
     engines: {node: '>= 0.8'}
@@ -5067,6 +5077,10 @@ packages:
       string-width: 4.2.3
       strip-ansi: 6.0.1
       wide-align: 1.1.5
+    dev: false
+
+  /gemoji/7.1.0:
+    resolution: {integrity: sha512-wI0YWDIfQraQMDs0yXAVQiVBZeMm/rIYssf8LZlMDdssKF19YqJKOHkv4zvwtVQTBJ0LNmErv1S+DqlVUudz8g==}
     dev: false
 
   /generate-function/2.3.1:
@@ -7963,6 +7977,15 @@ packages:
       '@types/hast': 2.3.4
       hast-util-raw: 7.2.2
       unified: 10.1.2
+    dev: false
+
+  /remark-gemoji/7.0.1:
+    resolution: {integrity: sha512-vhjuntkvYxRgM4Um6L5N7B3SrNu3eX6jNqpqAywpAvSYPbmDPNL3I5E6zWm+KPCyh3OpKRc5OPnz7SifggzePw==}
+    dependencies:
+      '@types/mdast': 3.0.10
+      gemoji: 7.1.0
+      unified: 10.1.2
+      unist-util-visit: 4.1.1
     dev: false
 
   /remark-gfm/3.0.1:

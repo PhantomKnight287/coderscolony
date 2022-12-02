@@ -36,6 +36,7 @@
     "react-dom": "18.2.0",
     "react-markdown": "^8.0.3",
     "rehype-raw": "^6.1.1",
+    "remark-gemoji": "^7.0.1",
     "remark-gfm": "^3.0.1",
     "remark-images": "^3.1.0",
     "showdown": "^2.1.0"
