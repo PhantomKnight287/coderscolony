@@ -10,6 +10,8 @@ import { slugify } from "@helpers/slugify";
 import rehypeRaw from "rehype-raw";
 import remarkImages from "remark-images";
 import clsx from "clsx";
+import remarkGemoji from "remark-gemoji";
+
 export const Renderer: FC<{ children: string }> = ({ children }) => {
   const { colorScheme } = useMantineColorScheme();
   const components:
@@ -131,7 +133,7 @@ export const Renderer: FC<{ children: string }> = ({ children }) => {
       })}
     >
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkImages]}
+        remarkPlugins={[remarkGfm, remarkImages,remarkGemoji]}
         components={components}
         skipHtml={false}
         rehypePlugins={[rehypeRaw]}
