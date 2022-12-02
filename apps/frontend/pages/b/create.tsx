@@ -17,6 +17,7 @@ import {
   Modal,
   Textarea,
   TextInput,
+  useMantineColorScheme,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useDebouncedValue } from "@mantine/hooks";
@@ -40,6 +41,7 @@ function CreateBlog() {
   const [submitModal, setSubmitModal] = useState(false);
   const [file, setFile] = useState<File>();
   const [loading, setLoading] = useState(false);
+  const { colorScheme } = useMantineColorScheme();
   useHydrateUserContext();
 
   async function createBlog() {
@@ -96,20 +98,28 @@ function CreateBlog() {
     <>
       <MetaTags description="Create New Blog" title="Create New Blog" />
       <Container>
-        <h1 className="text-2xl text-center font-['Inter'] font-bold">
-          Create New Blog
-        </h1>
         <form
           onSubmit={onSubmit((d) => {
             setSubmitModal(true);
           })}
         >
           <TextInput
-            label="Title"
             placeholder="An interesting title"
             required
             {...getInputProps("title")}
             mb="xl"
+            size="xl"
+            className={
+              (clsx(""),
+              {
+                "bg-[#171718]": colorScheme === "dark",
+              })
+            }
+            classNames={{
+              input: clsx("border-none", {
+                "bg-[#171718]": colorScheme === "dark",
+              }),
+            }}
           />
           <Editor
             content={values.content}
@@ -119,6 +129,12 @@ function CreateBlog() {
             }
             slug={`${slugify(values.title)}-${nanoid(10)}`}
             clickOnSendIconHandler={() => setSubmitModal((o) => !o)}
+            size="xl"
+            classNames={{
+              input: clsx("border-none", {
+                "bg-[#171718]": colorScheme === "dark",
+              }),
+            }}
           />
           {isDirty("content") && isDirty("title") ? (
             <Group mt="xl" position="center">

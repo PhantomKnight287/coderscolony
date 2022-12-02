@@ -1,3 +1,4 @@
 dist
+!packages/editor/dist
 node_modules
 .turbo

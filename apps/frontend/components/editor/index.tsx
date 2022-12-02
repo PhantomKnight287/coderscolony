@@ -1,11 +1,14 @@
 import { readCookie } from "@helpers/cookies";
 import {
   Button,
+  DefaultProps,
   Divider,
   Modal,
   Tabs,
   Textarea,
+  TextareaProps,
   TextInput,
+  TextInputStylesNames,
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import dynamic from "next/dynamic";
@@ -37,12 +40,13 @@ const RTE = dynamic(() => import("@mantine/rte"), {
   loading: () => <p>Loading...</p>,
 });
 
-interface Props {
+interface Props extends TextareaProps {
   content: string;
   setContent: Dispatch<SetStateAction<string>>;
   createPost: (content: string, slug: string) => void | Promise<boolean>;
   slug?: string;
   clickOnSendIconHandler?: () => void;
+  renderDivider?: boolean;
 }
 export function Editor({
   content,
@@ -50,6 +54,8 @@ export function Editor({
   createPost,
   slug,
   clickOnSendIconHandler,
+  renderDivider,
+  ...other
 }: Props) {
   const [opened, setOpened] = useState(false);
   const [file, setFile] = useState<File>();
@@ -121,6 +127,7 @@ export function Editor({
             placeholder="Write Something Here"
             value={content}
             onChange={(d) => setContent(d.target.value)}
+            {...other}
             className="mb-5"
           />
         </Tabs.Panel>
@@ -132,7 +139,7 @@ export function Editor({
           )}
         </Tabs.Panel>
       </Tabs>
-      <Divider orientation="horizontal" />
+      {!renderDivider ? null : <Divider orientation="horizontal" />}
       <Modal centered opened={opened} onClose={() => setOpened((o) => !o)}>
         <Label required>Image To Upload</Label>
         <SingleFileDropzone mt={"md"} file={file} setFile={setFile} />
