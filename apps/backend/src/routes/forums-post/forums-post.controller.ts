@@ -8,7 +8,6 @@ import {
   Post,
 } from '@nestjs/common';
 import { ValidationError } from 'joi';
-import { verify } from 'jsonwebtoken';
 import { Token } from 'src/decorators/token/token.decorator';
 import { slugify } from 'src/helpers/slugify';
 import { PrismaService } from 'src/services/prisma/prisma.service';
@@ -85,26 +84,12 @@ export class ForumsPostController {
   }
   @Get(':slug/:post')
   async fetchSinglePost(
-    @Token({ optional: true }) token: string,
     @Param('slug') forumSlug: string,
     @Param('post') postSlug: string,
   ) {
-    let jwt: DecodedJWT = undefined;
     forumSlug = slugify(forumSlug);
     postSlug = slugify(postSlug);
-    if (token) {
-      try {
-        jwt = (await verify(
-          token,
-          process.env.JWT_SECRET,
-        )) as unknown as DecodedJWT;
-      } catch (err) {
-        throw new HttpException(
-          'Invalid or Expired Authentication Token',
-          HttpStatus.FORBIDDEN,
-        );
-      }
-    }
+
     const postInfo = await this.prisma.prisma.posts.findFirst({
       where: {
         Forums: {
@@ -134,37 +119,11 @@ export class ForumsPostController {
       },
     });
     const likedBy = postInfo.likedBy.length;
-    const isPostLikedByUser =
-      jwt === undefined ? false : postInfo.likedBy.includes(jwt.id);
-      console.log(jwt.id)
-      console.log(postInfo.likedBy)
-      console.log(postInfo.likedBy.includes(jwt.id))
+
     delete postInfo.likedBy;
     const res: Record<string, any> = { post: postInfo };
     res['post']['likedBy'] = likedBy;
-    res['post']['liked'] = isPostLikedByUser;
-    if (jwt !== undefined) {
-      const { id } = jwt;
-      const user = await this.prisma.prisma.forumMember.findFirst({
-        where: {
-          user: { id },
-        },
-        select: {
-          role: true,
-          id: true,
-          user: {
-            select: {
-              id: true,
-            },
-          },
-        },
-      });
-      res['userInfo'] = {
-        isAuthor: user?.user.id === postInfo.author.id,
-        isAdmin: user?.role === 'ADMIN',
-        isModerator: user?.role === 'MODERATOR',
-      };
-    }
+
     return res;
   }
 }

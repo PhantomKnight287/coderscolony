@@ -13,4 +13,24 @@ export class StaticController {
     });
     return users;
   }
+  @Get('forums')
+  async generateStaticForums() {
+    const forums = await this.prisma.prisma.forums.findMany({
+      select: {
+        urlSlug: true,
+      },
+    });
+    return forums;
+  }
+  @Get('posts')
+  async generateStaticPosts() {
+    return await this.prisma.prisma.posts.findMany({
+      select: {
+        Forums: {
+          select: { urlSlug: true },
+        },
+        slug: true,
+      },
+    });
+  }
 }
