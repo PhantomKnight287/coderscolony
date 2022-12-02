@@ -46,7 +46,7 @@ export default function App(props: AppProps) {
               <MantineProvider
                 theme={{
                   colorScheme,
-                  fontFamily: "Inter",
+                  fontFamily: "Montserrat",
                   white: "#ffffff",
                   globalStyles: (theme) => ({
                     body: {
