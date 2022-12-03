@@ -11,6 +11,7 @@ import rehypeRaw from "rehype-raw";
 import remarkImages from "remark-images";
 import clsx from "clsx";
 import remarkGemoji from "remark-gemoji";
+import Embed from "@components/embed";
 
 export const Renderer: FC<{ children: string }> = ({ children }) => {
   const { colorScheme } = useMantineColorScheme();
@@ -115,14 +116,7 @@ export const Renderer: FC<{ children: string }> = ({ children }) => {
         <ol {...props} className={"list-decimal ml-4"} />
       ),
       a: ({ node, ...props }) => {
-        return (
-          <a
-            {...props}
-            target="blank"
-            rel="noreferrer noopener"
-            className="hover:underline text-blue-500"
-          />
-        );
+        return <Embed {...props} />;
       },
     };
   }, []);
@@ -133,7 +127,7 @@ export const Renderer: FC<{ children: string }> = ({ children }) => {
       })}
     >
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkImages,remarkGemoji]}
+        remarkPlugins={[remarkGfm, remarkImages, remarkGemoji]}
         components={components}
         skipHtml={false}
         rehypePlugins={[rehypeRaw]}
