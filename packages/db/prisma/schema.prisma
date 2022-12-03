@@ -60,6 +60,7 @@ model Forums {
   description  String?
   profileImage String?
   bannerImage  String?
+  bannerColor  String        @default("#C52184")
   forumMembers ForumMember[]
   createdAt    DateTime      @default(now())
   saves        Saved[]
