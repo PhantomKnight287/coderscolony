@@ -6,3 +6,7 @@
 body {
   font-family: "Montserrat", sans-serif;
 }
+
+.word-break{
+  word-break: break-word;
+}
