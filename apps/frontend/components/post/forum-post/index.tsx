@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import { memo } from "react";
 import type { ForumPost } from "../../../types/forum-post";
 import { PostAuthor } from "./post-author";
+import styles from "./post.module.scss";
 
 function ForumPost({ author, content, createdAt, id, slug }: ForumPost) {
   const { query, push } = useRouter();
@@ -19,7 +20,7 @@ function ForumPost({ author, content, createdAt, id, slug }: ForumPost) {
       onClick={() => push(`/f/${query.name}/post/${slug}`)}
     >
       <PostAuthor {...author} createdAt={createdAt} />
-      <div className="ml-10">
+      <div className={`ml-10 ${styles.renderer}`}>
         <Renderer>{getMarkdownString(content)}</Renderer>
       </div>
     </Paper>
