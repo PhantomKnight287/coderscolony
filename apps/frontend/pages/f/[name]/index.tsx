@@ -3,23 +3,25 @@ import { readCookie } from "@helpers/cookies";
 import { useHydrateUserContext } from "@hooks/hydrate/context";
 import { useUser } from "@hooks/user";
 import {
-  Anchor,
+  Avatar,
   Button,
+  Container,
   Image,
   Loader,
   Menu,
+  Skeleton,
   Text,
   useMantineColorScheme,
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { ForumMemberRoles } from "db";
+import { ForumMemberRoles, Forums } from "db";
 import { GetStaticPaths, GetStaticProps, InferGetStaticPropsType } from "next";
 import { useRouter } from "next/router";
 import { Fragment, useEffect, useRef, useState } from "react";
 import styles from "../../../styles/dynamic-forum-page.module.scss";
-import { IconCalendar, IconDots, IconTrash, IconUsers } from "@tabler/icons";
+import { IconCalendar, IconDots, IconUsers } from "@tabler/icons";
 import dayjs from "dayjs";
 import { monthNames } from "../../../constants/months";
 import { numberWithCommas } from "@helpers/number";
@@ -31,6 +33,11 @@ import type { ForumPost as ForumPostType } from "../../../types/forum-post";
 import { client } from "../../_app";
 import { openConfirmModal } from "@mantine/modals";
 import { useSidebar } from "@hooks/sidebar";
+import useCollapsedSidebar from "@hooks/sidebar/use-collapsed-sidebar";
+import { imageResolver } from "@helpers/profile-url";
+import { spaceGrotest } from "../../../fonts";
+import clsx from "clsx";
+import Link from "next/link";
 
 const Editor = dynamic(
   () => import("../../../components/editor").then((d) => d.Editor),
@@ -43,14 +50,9 @@ const Editor = dynamic(
   }
 );
 
-interface ApiData {
-  bannerImage: null | string;
-  createdAt: string;
-  description: string;
-  name: string;
+interface ApiData extends Forums {
   profileImage: null | string;
   forumMembers: number;
-  urlSlug: string;
   moderators: {
     role: "MODERATOR";
     user: {
@@ -59,7 +61,6 @@ interface ApiData {
       name: string;
     };
   }[];
-  joined?: boolean;
   userRole: ForumMemberRoles;
   admins: {
     role: "ADMIN";
@@ -76,7 +77,7 @@ const Forum = ({
   pageProps: InferGetStaticPropsType<typeof getStaticProps>;
 }) => {
   useHydrateUserContext();
-  const { query, isReady, replace, push } = useRouter();
+  const { query, isReady, replace, push, asPath } = useRouter();
   const { id } = useUser();
   const [data, setData] = useState<ApiData | undefined>(pageProps);
   const {
@@ -105,13 +106,14 @@ const Forum = ({
       getNextPageParam: (lastPage, pages) => lastPage.next,
     }
   );
+  const [forumEditable, setForumEditable] = useState(false);
+  const [joined, setJoined] = useState(false);
   const { colorScheme } = useMantineColorScheme();
   const postsContainerRef = useRef<HTMLDivElement>(null);
   const { ref, entry } = useIntersection({
     root: postsContainerRef.current,
     threshold: 1,
   });
-  const { setOpened, opened } = useSidebar();
   const createPost = (content: string, slug: string) => {
     const cookie = readCookie("token");
     if (!cookie)
@@ -180,12 +182,31 @@ const Forum = ({
   }, []);
 
   useEffect(() => {
-    setOpened(true);
-    return () => setOpened(false);
-  }, [opened]);
+    const controller = new AbortController();
+    const cookie = readCookie("token");
+    if (cookie) {
+      axios
+        .get(`/api/editable/forum/${query.name}`, {
+          signal: controller.signal,
+          headers: {
+            authorization: `Bearer ${cookie}`,
+          },
+        })
+        .then((d) => d.data)
+        .then(({ editable, joined }) => {
+          setForumEditable(editable);
+          setJoined(joined);
+        })
+        .catch(() => {});
+    }
+    return () => {
+      controller.abort();
+    };
+  }, []);
 
   const [content, setContent] = useState("");
-
+  useCollapsedSidebar();
+  const [imageLoaded, setImageLoaded] = useState(false);
   const openConfirmationModal = () =>
     openConfirmModal({
       title: "Please confirm your action",
@@ -246,9 +267,9 @@ const Forum = ({
     );
 
   return (
-    <div className="flex">
+    <div className="flex flex-col">
       <MetaTags
-        description={data.description}
+        description={data.description || data.name}
         title={`${data.name} | Coders Colony`}
         ogImage={
           !data.profileImage
@@ -258,151 +279,146 @@ const Forum = ({
             : `/images/${data.profileImage}`
         }
       />
-      <div className="flex-1 lg:flex-[0.75] mx-4 lg:ml-0">
-        <div
-          className={`flex flex-row flex-wrap items-center justify-start border-b-[1px] border-[#2c2c2c] pb-4 ${styles.info}`}
-        >
-          <div>
-            <Image
-              src={
-                !data.profileImage
-                  ? `https://avatars.dicebear.com/api/big-smile/${data.urlSlug}.png`
-                  : data.profileImage.startsWith(
-                      "https:///avatars.dicebear.com"
-                    )
-                  ? data.profileImage
-                  : `/images/${data.profileImage}`
-              }
-              styles={{
-                image: {
-                  maxHeight: "120px",
-                  maxWidth: "120px",
-                  minHeight: "90px",
-                  minWidth: "90px",
-                },
-              }}
-              radius={"md"}
-            />
-          </div>
-          <div className="mx-auto">
-            <h1
+      {data.bannerColor || data.bannerImage ? (
+        <div className="flex flex-col items-center justify-center">
+          {data.bannerImage ? (
+            <Skeleton visible={!imageLoaded}>
+              <Image
+                classNames={{
+                  image: "object-cover  max-h-[300px]",
+                }}
+                onLoad={() => setImageLoaded(true)}
+                src={imageResolver(data.bannerImage)}
+                className="rounded-md overflow-hidden object-cover"
+              />
+            </Skeleton>
+          ) : data.bannerColor ? (
+            <div
+              className="rounded-md overflow-hidden max-h-[300px] h-[300px] w-[70%]"
               style={{
-                color: colorScheme === "dark" ? "#ffffff" : "#202021",
+                backgroundColor: data.bannerColor,
               }}
-            >
-              {data.name}
-            </h1>
-            <p
-              className={`${styles.description} ${
-                colorScheme === "dark" ? "text-[#d4d4d4]" : ""
-              } `}
-            >
-              {data.description}
-            </p>
-            <div className="flex flex-row flex-wrap mt-2 items-center justify-evenly gap-3">
-              <div className="flex flex-row items-center text-[13px]">
-                <IconCalendar size={14} className="mr-2" />
-                <div
-                  style={{
-                    color: colorScheme === "dark" ? "#999999" : "unset",
-                  }}
-                >
-                  Created {monthNames[dayjs(data.createdAt).month()]}{" "}
-                  {dayjs(data.createdAt).year()}
-                </div>
-              </div>
-              <div className="flex flex-row items-center text-[13px]">
-                <IconUsers size={14} className="mr-2" />
-                <div
-                  style={{
-                    color: colorScheme === "dark" ? "#999999" : "unset",
-                  }}
-                >
-                  {numberWithCommas(data.forumMembers)}{" "}
-                  {data.forumMembers > 1 ? "Members" : "Member"}
-                </div>
+            ></div>
+          ) : null}
+        </div>
+      ) : null}
+      <Container className="flex flex-row flex-nowrap">
+        <div>
+          <div className="w-max h-max mt-[-2rem] flex items-center flex-row justify-center">
+            <Avatar
+              src={
+                data.profileImage
+                  ? data.profileImage.startsWith("https://avatar.dicebar")
+                    ? data.profileImage
+                    : `/images/${data.profileImage}`
+                  : `https://avatars.dicebear.com/api/big-smile/${data.name}.svg`
+              }
+              size={160}
+              radius={80}
+              className="bg-[#171718] border-4 ml-[20px] border-[#171718]"
+            />
+            <div className="flex flex-col ml-3 mt-8">
+              <h1
+                className={clsx(
+                  `text-xl font-bold ${spaceGrotest.className} overflow-hidden w-full text-ellipsis font-grotesk`,
+                  {
+                    "text-white": colorScheme === "dark",
+                  }
+                )}
+              >
+                {data.name}
+              </h1>
+              <Text color="dimmed">f/{data.urlSlug}</Text>
+              <div className="flex flex-row gap-2 mt-3 items-center">
+                {joined ? (
+                  <Button
+                    variant="outline"
+                    radius="md"
+                    color={joined ? "red" : "green"}
+                    onClick={openConfirmationModal}
+                  >
+                    {joined ? "Leave" : "Join"}
+                  </Button>
+                ) : null}
+
+                {forumEditable ? (
+                  <Link
+                    href={`${asPath}/edit`}
+                    className="text-blue-500 hover:underline"
+                  >
+                    <Button variant="outline" radius="md" color={"yellow"}>
+                      Edit
+                    </Button>
+                  </Link>
+                ) : null}
               </div>
             </div>
           </div>
-          <Menu>
-            <Menu.Target>
-              <div className="cursor-pointer">
-                <IconDots size={20} />
-              </div>
-            </Menu.Target>
-            <Menu.Dropdown>
-              {pageProps.joined ? (
-                <Menu.Item color="red" onClick={openConfirmationModal}>
-                  Leave This Forum
-                </Menu.Item>
-              ) : null}
-            </Menu.Dropdown>
-          </Menu>
-        </div>
-        <div className="mt-5">
-          <Editor
-            content={content}
-            setContent={setContent}
-            createPost={createPost}
-          />
-        </div>
-        <div ref={postsContainerRef}>
-          {status === "loading" ? (
-            <p>Loading...</p>
-          ) : status === "error" ? (
-            <p>Error: {(error as any).message}</p>
-          ) : (
-            <>
-              {posts.pages.map((post, id) => (
-                <Fragment key={id}>
-                  {post.posts.map((p_) => (
-                    <ForumPost {...p_} key={p_.id} />
-                  ))}
-                </Fragment>
-              ))}
-            </>
-          )}
-          <div>
-            {isFetchingNextPage ? (
-              "Loading more..."
-            ) : hasNextPage ? (
-              <Button
-                className={
-                  hasNextPage
-                    ? "bg-[#1864ab] bg-opacity-80 hover:scale-110  duration-[110ms]"
-                    : undefined
-                }
-                onClick={() => fetchNextPage()}
-                disabled={!hasNextPage || isFetchingNextPage}
-              >
-                Load More
-              </Button>
-            ) : null}
+          <div className="mt-5">
+            <Editor
+              content={content}
+              setContent={setContent}
+              createPost={createPost}
+            />
           </div>
-          <div>
-            {isFetching && !isFetchingNextPage ? (
-              "Fetching..."
+          <div ref={postsContainerRef}>
+            {status === "loading" ? (
+              <p>Loading...</p>
+            ) : status === "error" ? (
+              <p>Error: {(error as any).message}</p>
             ) : (
-              <p className="text-center text-sm mt-4">
-                {(posts?.pages || []).length > 0
-                  ? "No More Posts"
-                  : "No Posts Found"}
-              </p>
+              <>
+                {posts.pages.map((post, id) => (
+                  <Fragment key={id}>
+                    {post.posts.map((p_) => (
+                      <ForumPost {...p_} key={p_.id} />
+                    ))}
+                  </Fragment>
+                ))}
+              </>
             )}
-          </div>
-          <div ref={ref} className="opacity-0">
-            <Text weight={700}>
-              Lorem, ipsum dolor sit amet consectetur adipisicing elit. Ipsum
-              expedita quas laboriosam maiores quod, nobis molestias quo
-              inventore rem modi consequuntur impedit rerum eum nisi dolore
-              beatae molestiae nemo!
-            </Text>
+            <div>
+              {isFetchingNextPage ? (
+                "Loading more..."
+              ) : hasNextPage ? (
+                <Button
+                  className={
+                    hasNextPage
+                      ? "bg-[#1864ab] bg-opacity-80 hover:scale-110  duration-[110ms]"
+                      : undefined
+                  }
+                  onClick={() => fetchNextPage()}
+                  disabled={!hasNextPage || isFetchingNextPage}
+                >
+                  Load More
+                </Button>
+              ) : null}
+            </div>
+            <div>
+              {isFetching && !isFetchingNextPage ? (
+                "Fetching..."
+              ) : (
+                <p className="text-center text-sm mt-4">
+                  {(posts?.pages || []).length > 0
+                    ? "No More Posts"
+                    : "No Posts Found"}
+                </p>
+              )}
+            </div>
+            <div ref={ref} className="opacity-0">
+              <Text weight={700}>
+                Lorem, ipsum dolor sit amet consectetur adipisicing elit. Ipsum
+                expedita quas laboriosam maiores quod, nobis molestias quo
+                inventore rem modi consequuntur impedit rerum eum nisi dolore
+                beatae molestiae nemo!
+              </Text>
+            </div>
           </div>
         </div>
-      </div>
-      <div className="flex-[0.15] lg:border-l-[1px] border-[#2c2c2c] hidden lg:block h-[100vh]">
-        <ForumSidebar admins={data.admins} moderators={data.moderators} />
-      </div>
+        <div className="ml-4 mt-5 h-full flex-[0.15] lg:border-l-[1px] border-[#2c2c2c] hidden lg:block">
+          <ForumSidebar admins={data.admins} moderators={data.moderators} />
+        </div>
+      </Container>
     </div>
   );
 };
