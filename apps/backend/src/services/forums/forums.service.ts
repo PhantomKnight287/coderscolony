@@ -29,6 +29,7 @@ export class ForumsService {
           },
         },
         urlSlug: true,
+        bannerColor: true,
       },
     });
     if (!forumInfo)
