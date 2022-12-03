@@ -2,14 +2,10 @@ import { SingleFileDropzone } from "@components/dropzones/single";
 import { Editor } from "@components/editor";
 import Label from "@components/label";
 import { MetaTags } from "@components/meta";
-import { Renderer } from "@components/renderer";
 import { readCookie } from "@helpers/cookies";
-import { getMarkdownString } from "@helpers/showdown";
 import { slugify } from "@helpers/slugify";
-import useDebounce from "@hooks/debounce";
 import { useHydrateUserContext } from "@hooks/hydrate/context";
 import { useSidebar } from "@hooks/sidebar";
-import { useUser } from "@hooks/user";
 import {
   Button,
   Container,
@@ -20,14 +16,14 @@ import {
   useMantineColorScheme,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { useDebouncedValue } from "@mantine/hooks";
 import { showNotification } from "@mantine/notifications";
 import { uploadSingleFile } from "@services/upload";
 import clsx from "clsx";
 import { nanoid } from "nanoid";
-import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { createBlog as createBlogWithApi } from "@services/blogs";
+import { useRouter } from "next/router";
+import { useUser } from "@hooks/user";
 
 function CreateBlog() {
   const { setOpened, opened } = useSidebar();
@@ -42,6 +38,8 @@ function CreateBlog() {
   const [file, setFile] = useState<File>();
   const [loading, setLoading] = useState(false);
   const { colorScheme } = useMantineColorScheme();
+  const { push } = useRouter();
+  const { username } = useUser();
   useHydrateUserContext();
 
   async function createBlog() {
@@ -72,12 +70,12 @@ function CreateBlog() {
     })
       .then((d) => d.data)
       .then((d) => {
-        console.log(d);
         setSubmitModal(false);
-        return showNotification({
+        showNotification({
           message: "Blog Create Successfully. 👌",
           color: "green",
         });
+        push(`/u/${username}/blog/${d.slug}`);
       })
       .catch((err) => {
         console.log(err.response);
