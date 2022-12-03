@@ -23,6 +23,7 @@ import {
   InferGetStaticPropsType,
   NextPage,
 } from "next";
+import Link from "next/link";
 import { useEffect } from "react";
 import { Blogs } from "~types/blog";
 import { monthNames } from "../../../../../constants/months";
@@ -33,7 +34,6 @@ const BlogPage: NextPage<{
   const { colorScheme } = useMantineColorScheme();
   const { opened, setOpened } = useSidebar();
   useHydrateUserContext();
-
 
   useEffect(() => {
     if (opened) return setOpened(false);
@@ -48,7 +48,7 @@ const BlogPage: NextPage<{
         ogImage={imageResolver(pageProps.ogImage!)}
       />
 
-      <Container>
+      <Container mb="xl">
         <Image
           src={imageResolver(pageProps.ogImage!)}
           style={{
@@ -57,15 +57,18 @@ const BlogPage: NextPage<{
             display: "block",
             width: "100%",
           }}
+          classNames={{
+            image: "rounded-md",
+          }}
         />
         <Title
-          className={clsx("", {
+          className={clsx("my-2 text-center", {
             "text-white": colorScheme === "dark",
           })}
         >
           {pageProps.title}
         </Title>
-        <Group mt="md">
+        <Group mt="md" position="center">
           <Avatar
             src={profileImageResolver({
               profileURL: pageProps.author.profileImage,
@@ -75,7 +78,9 @@ const BlogPage: NextPage<{
             radius="xl"
           />
           <div className="gap-[2px] flex flex-row">
-            <Text>{pageProps.author.name}</Text>
+            <Link href={`/u/${pageProps.author.username}`}>
+              <Text>{pageProps.author.name}</Text>
+            </Link>
             <span className="mx-2">/</span>
             <Text>
               {dayjs(pageProps.createdAt).get("date")}{" "}
@@ -84,7 +89,7 @@ const BlogPage: NextPage<{
             </Text>
           </div>
         </Group>
-        <Divider mt="lg" />
+        <Divider mt="lg" mb="md" />
         {typeof window !== "undefined" ? (
           <Renderer children={pageProps.content!} />
         ) : null}
@@ -113,7 +118,6 @@ export const getStaticProps: GetStaticProps<Blogs> = async ({ params }) => {
   const data = await axios
     .get(`${process.env.API_URL}/blogs/${username}/blog/${slug}`)
     .catch((err) => {
-      console.log(err);
       return null;
     });
   if (data === null)
