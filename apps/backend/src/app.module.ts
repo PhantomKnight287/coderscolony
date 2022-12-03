@@ -18,10 +18,12 @@ import { UpdateProfileController } from './routes/update-profile/update-profile.
 import { VerifyUserService } from './services/verify-user/verify-user.service';
 import { BlogsController } from './routes/blogs/blogs.controller';
 import { StaticController } from './routes/static/static.controller';
+import { EditableController } from './routes/editable/editable.controller';
+import { ForumEditController } from './routes/forum-edit/forum-edit.controller';
 
 @Module({
   imports: [],
-  controllers: [AppController, AuthController, MetadataController, NotificationsController, ForumsController, UploadController, ForumsPostController, PostActionsController, ProfileController, UpdateProfileController, BlogsController, StaticController],
+  controllers: [AppController, AuthController, MetadataController, NotificationsController, ForumsController, UploadController, ForumsPostController, PostActionsController, ProfileController, UpdateProfileController, BlogsController, StaticController, EditableController, ForumEditController],
   providers: [AppService, AuthService, PrismaService, NotificationsGateway, NotificationsService, ForumsService, VerifyUserService],
 })
 export class AppModule {}
