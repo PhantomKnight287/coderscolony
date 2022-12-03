@@ -11,7 +11,6 @@ import {
 } from "@mantine/core";
 import {
   TablerIcon,
-  IconCalendarStats,
   IconChevronLeft,
   IconChevronRight,
 } from "@tabler/icons";
@@ -27,7 +26,6 @@ const useStyles = createStyles((theme) => ({
     fontSize: theme.fontSizes.sm,
 
     "&:hover": {
-      backgroundColor: "transparent",
       color: theme.colorScheme === "dark" ? theme.white : theme.black,
     },
     minWidth: "189px",
@@ -49,7 +47,6 @@ const useStyles = createStyles((theme) => ({
     cursor: "pointer",
 
     "&:hover": {
-      backgroundColor: "transparent",
       color: theme.colorScheme === "dark" ? theme.white : theme.black,
     },
   },
@@ -145,6 +142,7 @@ export function NavbarLinksGroup(props: LinksGroupProps) {
       sx={(theme) => ({
         padding: theme.spacing.md,
         minWidth: "190px",
+        maxWidth:"222px"
       })}
     >
       <LinksGroup {...props} />
