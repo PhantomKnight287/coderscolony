@@ -57,7 +57,6 @@ model Forums {
   id           String        @id @unique @default(cuid())
   name         String
   urlSlug      String        @unique
-  description  String?
   profileImage String?
   bannerImage  String?
   bannerColor  String        @default("#C52184")
