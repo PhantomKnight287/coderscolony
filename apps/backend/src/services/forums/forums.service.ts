@@ -13,7 +13,6 @@ export class ForumsService {
       select: {
         bannerImage: true,
         createdAt: true,
-        description: true,
         name: true,
         profileImage: true,
         forumMembers: {
