@@ -1,20 +1,28 @@
 import {
+  Body,
   Controller,
+  Delete,
   Get,
   HttpException,
   HttpStatus,
   Param,
+  Post,
 } from '@nestjs/common';
+import { Forums } from 'db';
 import { Token } from 'src/decorators/token/token.decorator';
 import { slugify } from 'src/helpers/slugify';
+import { EditableService } from 'src/services/editable/editable.service';
 import { PrismaService } from 'src/services/prisma/prisma.service';
 import { DecodedJWT } from 'src/types/jwt';
 
-@Controller('forum-edit')
+@Controller('forum-edit/:slug')
 export class ForumEditController {
-  constructor(protected prisma: PrismaService) {}
+  constructor(
+    protected prisma: PrismaService,
+    protected editable: EditableService,
+  ) {}
 
-  @Get(':slug/details')
+  @Get('details')
   async getForumDetails(
     @Token({ validate: true }) { id }: DecodedJWT,
     @Param('slug') slug: string,
@@ -59,5 +67,129 @@ export class ForumEditController {
     delete forum.createdAt;
     delete forum.urlSlug;
     return forum;
+  }
+  @Post('edit')
+  async editForum(
+    @Token({ validate: true }) { id }: DecodedJWT,
+    @Body() body: Partial<Forums>,
+    @Param('slug') slug: string,
+  ) {
+    const isForumEditable = await this.editable.isForumEditable(
+      id,
+      slugify(slug),
+    );
+    if (isForumEditable.editable === false)
+      throw new HttpException(isForumEditable.message, isForumEditable.status);
+
+    const { bannerColor, name } = body;
+    const forumInfo = await this.prisma.prisma.forums.findFirst({
+      where: {
+        urlSlug: {
+          equals: slugify(slug),
+          mode: 'insensitive',
+        },
+      },
+    });
+    await this.prisma.prisma.forums.update({
+      where: {
+        id: forumInfo.id,
+      },
+      data: {
+        name,
+        bannerColor,
+      },
+    });
+    return { edited: true };
+  }
+  @Post('banner-image')
+  async changeBannerImage(
+    @Token({ validate: true }) { id }: DecodedJWT,
+    @Body() body: { url: string },
+    @Param('slug') slug: string,
+  ) {
+    const isForumEditable = await this.editable.isForumEditable(
+      id,
+      slugify(slug),
+    );
+    if (isForumEditable.editable === false)
+      throw new HttpException(isForumEditable.message, isForumEditable.status);
+    const { url } = body;
+    const forumInfo = await this.prisma.prisma.forums.findFirst({
+      where: {
+        urlSlug: {
+          equals: slugify(slug),
+          mode: 'insensitive',
+        },
+      },
+    });
+    await this.prisma.prisma.forums.update({
+      where: {
+        id: forumInfo.id,
+      },
+      data: {
+        bannerImage: url,
+      },
+    });
+    return { edited: true };
+  }
+  @Post('profile-image')
+  async changeProfileImage(
+    @Token({ validate: true }) { id }: DecodedJWT,
+    @Body() body: { url: string },
+    @Param('slug') slug: string,
+  ) {
+    const isForumEditable = await this.editable.isForumEditable(
+      id,
+      slugify(slug),
+    );
+    if (isForumEditable.editable === false)
+      throw new HttpException(isForumEditable.message, isForumEditable.status);
+    const { url } = body;
+    const forumInfo = await this.prisma.prisma.forums.findFirst({
+      where: {
+        urlSlug: {
+          equals: slugify(slug),
+          mode: 'insensitive',
+        },
+      },
+    });
+    await this.prisma.prisma.forums.update({
+      where: {
+        id: forumInfo.id,
+      },
+      data: {
+        profileImage: url,
+      },
+    });
+    return { edited: true };
+  }
+  @Delete('banner-image/remove')
+  async removeBannerImage(
+    @Token({ validate: true }) { id }: DecodedJWT,
+    @Param('slug') slug: string,
+  ) {
+    const isForumEditable = await this.editable.isForumEditable(
+      id,
+      slugify(slug),
+    );
+    if (isForumEditable.editable === false)
+      throw new HttpException(isForumEditable.message, isForumEditable.status);
+    const forumInfo = await this.prisma.prisma.forums.findFirst({
+      where: {
+        urlSlug: {
+          equals: slugify(slug),
+          mode: 'insensitive',
+        },
+      },
+    });
+    await this.prisma.prisma.forums.update({
+      where: {
+        id: forumInfo.id,
+      },
+      data: {
+        bannerImage: null,
+      },
+    });
+    return { edited: true };
   }
 }
