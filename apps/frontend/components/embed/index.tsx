@@ -72,6 +72,7 @@ function Embed(props: any) {
             "max-w-[550px]": metaData.image,
             "max-w-fit": !metaData.image,
           })}
+          mt="sm"
         >
           {metaData.image ? (
             <Card.Section>
