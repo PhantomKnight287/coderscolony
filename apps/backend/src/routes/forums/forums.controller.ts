@@ -39,7 +39,6 @@ export class ForumsController {
         },
         createdAt: true,
         urlSlug: true,
-        description: true,
       },
       orderBy: [
         {
@@ -84,7 +83,7 @@ export class ForumsController {
         message: error.details[0].message,
       });
     }
-    const { name, slug, description, profileURL } = body;
+    const { name, slug, profileURL } = body;
     let jwt: DecodedJWT;
     try {
       jwt = verify(token, process.env.JWT_SECRET) as unknown as DecodedJWT;
@@ -124,7 +123,6 @@ export class ForumsController {
       data: {
         name,
         urlSlug: slugify(slug),
-        description,
         profileImage: profileURL,
         bannerColor: '#' + (((1 << 24) * Math.random()) | 0).toString(16),
       },
