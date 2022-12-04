@@ -1,15 +1,15 @@
 .container {
-  @apply flex flex-row;
+	@apply flex flex-row;
 }
 .sidebar {
-  flex: 0.25;
-  @media (max-width: 1024px) {
-    display: none;
-  }
+	flex: 0.25;
+	@media (max-width: 1024px) {
+		display: none;
+	}
 }
 .content {
-  flex: 1;
-  @media (max-width: 1024px) {
-    @apply m-0;
-  }
+	flex: 1;
+	@media (max-width: 1024px) {
+		@apply m-0;
+	}
 }

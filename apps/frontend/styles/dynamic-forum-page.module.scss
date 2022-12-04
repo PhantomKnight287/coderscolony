@@ -1,19 +1,19 @@
 .description {
-  max-width: 600px;
-  white-space: initial;
-  word-wrap: break-word;
-  hyphens: auto;
+	max-width: 600px;
+	white-space: initial;
+	word-wrap: break-word;
+	hyphens: auto;
 }
 
 .info {
-  @media (max-width: 500px) {
-    @apply flex-nowrap;
-    > div {
-      @apply mr-[20px];
-    }
-    img {
-      min-width: 133px;
-      min-height: 145px;
-    }
-  }
+	@media (max-width: 500px) {
+		@apply flex-nowrap;
+		> div {
+			@apply mr-[20px];
+		}
+		img {
+			min-width: 133px;
+			min-height: 145px;
+		}
+	}
 }

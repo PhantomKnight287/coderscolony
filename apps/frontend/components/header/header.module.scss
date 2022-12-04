@@ -1,11 +1,11 @@
 .container_ {
-  @apply flex flex-row items-center justify-around;
-  margin-left: 0 !important;
-  margin-right: 0 !important;
-  border-bottom: unset;
-  background-color: inherit
+	@apply flex flex-row items-center justify-around;
+	margin-left: 0 !important;
+	margin-right: 0 !important;
+	border-bottom: unset;
+	background-color: inherit;
 }
 
 .authButtonContainer {
-  @apply flex flex-row space-x-3;
+	@apply flex flex-row space-x-3;
 }

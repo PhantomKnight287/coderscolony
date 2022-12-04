@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "dev": "turbo run dev",
-    "build": "turbo run build"
+    "build": "turbo run build",
+    "format":"turbo run format",
+    "lint":"turbo run lint"
+
   },
   "keywords": [],
   "author": "",

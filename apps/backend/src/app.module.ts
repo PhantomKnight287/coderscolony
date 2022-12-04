@@ -24,7 +24,31 @@ import { EditableService } from './services/editable/editable.service';
 
 @Module({
   imports: [],
-  controllers: [AppController, AuthController, MetadataController, NotificationsController, ForumsController, UploadController, ForumsPostController, PostActionsController, ProfileController, UpdateProfileController, BlogsController, StaticController, EditableController, ForumEditController],
-  providers: [AppService, AuthService, PrismaService, NotificationsGateway, NotificationsService, ForumsService, VerifyUserService, EditableService],
+  controllers: [
+    AppController,
+    AuthController,
+    MetadataController,
+    NotificationsController,
+    ForumsController,
+    UploadController,
+    ForumsPostController,
+    PostActionsController,
+    ProfileController,
+    UpdateProfileController,
+    BlogsController,
+    StaticController,
+    EditableController,
+    ForumEditController,
+  ],
+  providers: [
+    AppService,
+    AuthService,
+    PrismaService,
+    NotificationsGateway,
+    NotificationsService,
+    ForumsService,
+    VerifyUserService,
+    EditableService,
+  ],
 })
 export class AppModule {}

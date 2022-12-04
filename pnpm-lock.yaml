@@ -162,6 +162,7 @@ importers:
       nanoid: ^4.0.0
       next: latest
       postcss: ^8.4.19
+      prettier: ^2.8.0
       react: 18.2.0
       react-dom: 18.2.0
       react-markdown: ^8.0.3
@@ -220,6 +221,7 @@ importers:
       autoprefixer: 10.4.13_postcss@8.4.19
       eslint-config-next: 13.0.6_typescript@4.8.4
       postcss: 8.4.19
+      prettier: 2.8.0
       sass: 1.56.1
       tailwindcss: 3.2.4_postcss@8.4.19
       typescript: 4.8.4

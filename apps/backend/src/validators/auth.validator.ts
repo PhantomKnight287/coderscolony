@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import * as JOI from 'joi';
 export const SignUp = JOI.object({
   email: JOI.string().email().required(),

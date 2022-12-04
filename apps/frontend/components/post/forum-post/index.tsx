@@ -8,23 +8,23 @@ import { PostAuthor } from "./post-author";
 import styles from "./post.module.scss";
 
 function ForumPost({ author, content, createdAt, id, slug }: ForumPost) {
-  const { query, push } = useRouter();
+	const { query, push } = useRouter();
 
-  return (
-    <Paper
-      withBorder
-      mt="xl"
-      pt="md"
-      p="md"
-      className="cursor-pointer"
-      onClick={() => push(`/f/${query.name}/post/${slug}`)}
-    >
-      <PostAuthor {...author} createdAt={createdAt} />
-      <div className={`ml-10 ${styles.renderer}`}>
-        <Renderer>{getMarkdownString(content)}</Renderer>
-      </div>
-    </Paper>
-  );
+	return (
+		<Paper
+			withBorder
+			mt="xl"
+			pt="md"
+			p="md"
+			className="cursor-pointer"
+			onClick={() => push(`/f/${query.name}/post/${slug}`)}
+		>
+			<PostAuthor {...author} createdAt={createdAt} />
+			<div className={`ml-10 ${styles.renderer}`}>
+				<Renderer>{getMarkdownString(content)}</Renderer>
+			</div>
+		</Paper>
+	);
 }
 
 export default memo(ForumPost);

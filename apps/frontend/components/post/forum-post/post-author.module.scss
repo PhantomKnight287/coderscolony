@@ -1,7 +1,7 @@
 .timestamp {
-  &::before {
-    content: "•";
-    font-size: 10px;
-    margin-right: 8px;
-  }
+	&::before {
+		content: "•";
+		font-size: 10px;
+		margin-right: 8px;
+	}
 }
