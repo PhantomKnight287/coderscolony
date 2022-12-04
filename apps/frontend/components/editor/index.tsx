@@ -133,6 +133,7 @@ export function Editor({
         </Tabs.Panel>
         <Tabs.Panel value="preview" pt="xs">
           {content ? (
+            // eslint-disable-next-line react/no-children-prop
             <Renderer children={getMarkdownString(content)} />
           ) : (
             <p className="text-center my-5">Nothing To Preview</p>

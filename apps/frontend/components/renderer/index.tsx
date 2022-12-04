@@ -27,6 +27,7 @@ export const Renderer: FC<{ children: string }> = ({ children }) => {
           <Prism
             language={match[1].replace("language-", "") as any}
             {...props}
+            // eslint-disable-next-line react/no-children-prop
             children={String(children).replace(/\n$/, "")}
           />
         ) : (

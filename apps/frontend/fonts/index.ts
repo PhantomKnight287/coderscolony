@@ -1,4 +1,4 @@
-import { Inter, Space_Grotesk } from "@next/font/google";
+import { Inter, Outfit, Space_Grotesk } from "@next/font/google";
 
 export const inter = Inter({
   variable: "--font-inter",
@@ -6,4 +6,8 @@ export const inter = Inter({
 
 export const spaceGrotest = Space_Grotesk({
   variable: "--font-space-grotest",
+});
+
+export const outfit = Outfit({
+  variable: "--font-outfit",
 });
