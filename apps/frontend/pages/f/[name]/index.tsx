@@ -35,7 +35,7 @@ import { openConfirmModal } from "@mantine/modals";
 import { useSidebar } from "@hooks/sidebar";
 import useCollapsedSidebar from "@hooks/sidebar/use-collapsed-sidebar";
 import { imageResolver } from "@helpers/profile-url";
-import { spaceGrotest } from "../../../fonts";
+import { outfit, spaceGrotest } from "../../../fonts";
 import clsx from "clsx";
 import Link from "next/link";
 
@@ -212,8 +212,9 @@ const Forum = ({
       title: "Please confirm your action",
       children: (
         <Text size="sm">
-          You're about to leave this forum. You'll not recieve updates regarding
-          this forum. If you're the only admin, this forum will be deleted.
+          You&apos;re about to leave this forum. You&apos;ll not recieve updates
+          regarding this forum. If you&apos;re the only admin, this forum will
+          be deleted.
         </Text>
       ),
       onConfirm: leaveForum,
@@ -269,7 +270,7 @@ const Forum = ({
   return (
     <div className="flex flex-col">
       <MetaTags
-        description={data.description || data.name}
+        description={""}
         title={`${data.name} | Coders Colony`}
         ogImage={
           !data.profileImage
@@ -320,7 +321,7 @@ const Forum = ({
             <div className="flex flex-col ml-3 mt-8">
               <h1
                 className={clsx(
-                  `text-xl font-bold ${spaceGrotest.className} overflow-hidden w-full text-ellipsis font-grotesk`,
+                  `text-xl font-bold ${outfit.className} overflow-hidden w-full text-ellipsis font-outfit`,
                   {
                     "text-white": colorScheme === "dark",
                   }
@@ -328,7 +329,9 @@ const Forum = ({
               >
                 {data.name}
               </h1>
-              <Text color="dimmed">f/{data.urlSlug}</Text>
+              <Text color="dimmed" className={clsx(`${outfit.className}`)}>
+                f/{data.urlSlug}
+              </Text>
               <div className="flex flex-row gap-2 mt-3 items-center">
                 {joined ? (
                   <Button

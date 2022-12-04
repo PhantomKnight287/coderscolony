@@ -91,6 +91,7 @@ const BlogPage: NextPage<{
         </Group>
         <Divider mt="lg" mb="md" />
         {typeof window !== "undefined" ? (
+          // eslint-disable-next-line react/no-children-prop
           <Renderer children={pageProps.content!} />
         ) : null}
       </Container>
