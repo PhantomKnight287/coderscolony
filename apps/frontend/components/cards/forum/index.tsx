@@ -1,17 +1,12 @@
-import { IconHeart } from "@tabler/icons";
 import {
   Card,
-  Image,
   Text,
   Group,
-  Badge,
   Button,
-  ActionIcon,
   createStyles,
   Avatar,
 } from "@mantine/core";
 import { useRouter } from "next/router";
-import { Renderer } from "@components/renderer";
 
 const useStyles = createStyles((theme) => ({
   card: {
@@ -99,13 +94,6 @@ export function ForumCard({
           </Text>
         </Group>
       </Card.Section>
-
-      <Card.Section className={classes.section}>
-        <Text mt="md" className={classes.label} color="dimmed">
-          {description ? description : "Perfect for you, if you enjoy"}
-        </Text>
-      </Card.Section>
-
       <Group mt="xs">
         <Button
           radius="md"
