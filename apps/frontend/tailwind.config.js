@@ -11,6 +11,7 @@ module.exports = {
       fontFamily: {
         grotesk: ["var(--font-space-grotest)", ...fontFamily.sans],
         inter: ["var(--font-inter)", ...fontFamily.sans],
+        outfit: ["var(--font-outfit)", ...fontFamily.sans],
       },
     },
   },
