@@ -66,6 +66,7 @@ function ForumsPage() {
 				title="Forums"
 			/>
 			<SimpleGrid
+			className="mt-20"
 				breakpoints={[
 					{ minWidth: "sm", cols: 2 },
 					{ minWidth: "md", cols: 3 },

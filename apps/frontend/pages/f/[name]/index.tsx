@@ -293,6 +293,7 @@ const Forum = ({
 								onLoad={() => setImageLoaded(true)}
 								src={imageResolver(data.bannerImage)}
 								className="rounded-md overflow-hidden object-cover"
+								alt="Banner Image"
 							/>
 						</Skeleton>
 					) : data.bannerColor ? (
