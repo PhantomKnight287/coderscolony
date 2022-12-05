@@ -10,3 +10,10 @@ body {
 .word-break {
 	word-break: break-word;
 }
+
+ul{
+	list-style: circle !important;
+}
+ol{
+	list-style: decimal !important;
+}
