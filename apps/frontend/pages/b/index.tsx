@@ -3,6 +3,7 @@ import BlogItem from "@components/blog/item";
 import { MetaTags } from "@components/meta";
 import { useHydrateUserContext } from "@hooks/hydrate/context";
 import { useSidebar } from "@hooks/sidebar";
+import useCollapsedSidebar from "@hooks/sidebar/use-collapsed-sidebar";
 import { Button, Container, Loader, SimpleGrid } from "@mantine/core";
 import { useIntersection } from "@mantine/hooks";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -36,6 +37,7 @@ export default function BlogsPage() {
 	}>(["all-blogs"], (d) => fetcher({ pageParam: d.pageParam }), {
 		getNextPageParam: (lastPage, all) => lastPage.next,
 	});
+	useCollapsedSidebar()
 	useEffect(() => {
 		if (opened === true) return setOpened(false);
 		return () => setOpened(true);
