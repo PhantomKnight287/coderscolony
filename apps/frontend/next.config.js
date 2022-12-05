@@ -25,6 +25,10 @@ module.exports = {
 				source: "/images/:slug*",
 				destination: `${process.env.STORAGE_BUCKET_URL}/:slug*`,
 			},
+			{
+				source: "/@:username",
+				destination: `/u/:username`,
+			},
 		];
 	},
 };
