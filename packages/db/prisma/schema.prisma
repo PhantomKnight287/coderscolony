@@ -11,29 +11,31 @@ datasource db {
 }
 
 model User {
-  id            String          @id @unique @default(cuid())
-  email         String          @unique
+  id            String             @id @unique @default(cuid())
+  email         String             @unique
   name          String
-  username      String          @unique
+  username      String             @unique
   password      String
   bannerColor   String?
   oneLiner      String?
+  profileViews  Int                @default(0)
   // a link to cdn
   bannerImage   String?
   // a link to cdn or dicebar avatar
   profileImage  String?
   notifications Notifications[]
-  verified      Boolean         @default(false)
+  verified      Boolean            @default(false)
   forums        ForumMember[]
   saved         Saved[]
   Posts         Posts[]
   Comments      Comments[]
-  createdAt     DateTime        @default(now())
-  followers     Follows[]       @relation("following")
-  following     Follows[]       @relation("follower")
+  createdAt     DateTime           @default(now())
+  followers     Follows[]          @relation("following")
+  following     Follows[]          @relation("follower")
   Blog          Blog[]
   tags          Tags[]
   Series        Series[]
+  interests     ProfileInterests[]
 }
 
 model Notifications {
@@ -157,10 +159,19 @@ model Tags {
 }
 
 model Series {
-  id        String @id @unique @default(cuid())
-  author    User   @relation(fields: [userId], references: [id])
+  id        String   @id @unique @default(cuid())
+  author    User     @relation(fields: [userId], references: [id])
+  slug      String
   userId    String
   blogs     Blog[]
-  createdAt String
   tags      Tags[]
+  createdAt DateTime @default(now())
+}
+
+model ProfileInterests {
+  id    String  @id @unique @default(cuid())
+  users User[]
+  name  String
+  icon  String
+  color String? @default("cyan")
 }
