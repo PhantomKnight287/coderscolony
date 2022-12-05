@@ -21,6 +21,8 @@ import { StaticController } from './routes/static/static.controller';
 import { EditableController } from './routes/editable/editable.controller';
 import { ForumEditController } from './routes/forum-edit/forum-edit.controller';
 import { EditableService } from './services/editable/editable.service';
+import { SeriesController } from './routes/series/series.controller';
+import { UserService } from './services/user/user.service';
 
 @Module({
   imports: [],
@@ -39,6 +41,7 @@ import { EditableService } from './services/editable/editable.service';
     StaticController,
     EditableController,
     ForumEditController,
+    SeriesController,
   ],
   providers: [
     AppService,
@@ -49,6 +52,7 @@ import { EditableService } from './services/editable/editable.service';
     ForumsService,
     VerifyUserService,
     EditableService,
+    UserService,
   ],
 })
 export class AppModule {}
