@@ -75,9 +75,7 @@ export function Blogs() {
 					>
 						Load More
 					</Button>
-				) : (
-					"Nothing more to load"
-				)}
+				) : null}
 			</div>
 			<div ref={ref}>
 				{isFetching && !isFetchingNextPage ? "Fetching..." : null}
