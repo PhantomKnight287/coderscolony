@@ -21,6 +21,12 @@ export function SingleFileDropzone(props: Props) {
 					color: "red",
 				})
 			}
+			getFilesFromEvent={(e) => {
+				return Promise.resolve([
+					// @ts-ignore
+					...(e.target as EventTarget & HTMLInputElement)?.files,
+				]);
+			}}
 			maxSize={3 * 1024 ** 2}
 			accept={IMAGE_MIME_TYPE}
 			multiple={false}
