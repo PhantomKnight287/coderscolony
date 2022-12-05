@@ -14,8 +14,8 @@ export function getMarkdownString(html: string) {
 		openLinksInNewWindow: true,
 	});
 	converter.setFlavor("github");
-	const converted = convertMarkdownToHTML(html);
-	return converter.makeMarkdown(converted);
+	const converted = converter.makeMarkdown(convertMarkdownToHTML(html));
+	return converted;
 }
 
 export function convertMarkdownToHTML(md: string) {
