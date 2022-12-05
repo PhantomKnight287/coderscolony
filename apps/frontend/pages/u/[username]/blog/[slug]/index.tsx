@@ -1,6 +1,7 @@
 import { MetaTags } from "@components/meta";
 import { Renderer } from "@components/renderer";
 import { imageResolver, profileImageResolver } from "@helpers/profile-url";
+import { getMarkdownString } from "@helpers/showdown";
 import { useHydrateUserContext } from "@hooks/hydrate/context";
 import { useSidebar } from "@hooks/sidebar";
 import {
@@ -60,6 +61,7 @@ const BlogPage: NextPage<{
 					classNames={{
 						image: "rounded-md",
 					}}
+					alt="Banner Image"
 				/>
 				<Title
 					className={clsx("my-2 text-center", {
@@ -95,8 +97,10 @@ const BlogPage: NextPage<{
 				</Group>
 				<Divider mt="lg" mb="md" />
 				{typeof window !== "undefined" ? (
-					// eslint-disable-next-line react/no-children-prop
-					<Renderer children={pageProps.content!} />
+					<Renderer
+						// eslint-disable-next-line react/no-children-prop
+						children={getMarkdownString(pageProps.content!)}
+					/>
 				) : null}
 			</Container>
 		</>
