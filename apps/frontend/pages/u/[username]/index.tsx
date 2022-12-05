@@ -76,7 +76,7 @@ const UsernamePage: NextPage<{
 				{user.bannerColor || user.bannerImage ? (
 					<div className="flex flex-col items-center justify-center">
 						{user.bannerImage ? (
-							<Skeleton visible={!imageLoaded}>
+							<Skeleton visible={!imageLoaded} className="w-full min-h-[300px] max-h-[300px]" >
 								<Image
 									classNames={{
 										image: classes.image,
@@ -84,6 +84,7 @@ const UsernamePage: NextPage<{
 									onLoad={() => setImageLoaded(true)}
 									src={imageResolver(user.bannerImage)}
 									className="rounded-md overflow-hidden object-cover"
+									alt="Banner Image"
 								/>
 							</Skeleton>
 						) : user.bannerColor ? (
