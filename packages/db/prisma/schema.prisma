@@ -33,6 +33,7 @@ model User {
   following     Follows[]       @relation("follower")
   Blog          Blog[]
   tags          Tags[]
+  Series        Series[]
 }
 
 model Notifications {
@@ -138,15 +139,28 @@ model Blog {
   tags        Tags[]
   ogImage     String?
   createdAt   DateTime @default(now())
+  Series      Series?  @relation(fields: [seriesId], references: [id])
+  seriesId    String?
 }
 
 model Tags {
-  id     String  @id @unique @default(cuid())
-  name   String
-  logo   String
-  color  String
-  Blog   Blog?   @relation(fields: [blogId], references: [id])
-  blogId String?
-  User   User?   @relation(fields: [userId], references: [id])
-  userId String?
+  id       String   @id @unique @default(cuid())
+  name     String
+  logo     String
+  color    String
+  Blog     Blog[]
+  blogId   String?
+  User     User?    @relation(fields: [userId], references: [id])
+  userId   String?
+  Series   Series[]
+  seriesId String?
+}
+
+model Series {
+  id        String @id @unique @default(cuid())
+  author    User   @relation(fields: [userId], references: [id])
+  userId    String
+  blogs     Blog[]
+  createdAt String
+  tags      Tags[]
 }
