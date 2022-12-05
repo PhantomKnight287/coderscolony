@@ -1,5 +1,5 @@
 import { SingleFileDropzone } from "@components/dropzones/single";
-import { Editor } from "@components/editor";
+// import { Editor } from "@components/editor";
 import Label from "@components/label";
 import { MetaTags } from "@components/meta";
 import { readCookie } from "@helpers/cookies";
@@ -8,10 +8,8 @@ import { useHydrateUserContext } from "@hooks/hydrate/context";
 import { useSidebar } from "@hooks/sidebar";
 import {
 	Button,
-	Container,
 	Group,
 	Modal,
-	Textarea,
 	TextInput,
 	useMantineColorScheme,
 } from "@mantine/core";
@@ -24,6 +22,8 @@ import React, { useEffect, useState } from "react";
 import { createBlog as createBlogWithApi } from "@services/blogs";
 import { useRouter } from "next/router";
 import { useUser } from "@hooks/user";
+import { Editor } from "@components/editor";
+import { Container } from "@components/container";
 
 function CreateBlog() {
 	const { setOpened, opened } = useSidebar();
