@@ -128,7 +128,7 @@ export function Sidebar() {
 		});
 	return (
 		<DrawerWrapper>
-			<aside className="lg:border-r-[1px] border-[#2c2c2c] mr-5 h-[100vh]">
+			<aside className="lg:border-r-[1px] border-[#2c2c2c] mr-5 h-[100vh]  mt-20">
 				<Container size={220}>
 					<NavbarLinksGroup
 						icon={IconMessageCircle2}
