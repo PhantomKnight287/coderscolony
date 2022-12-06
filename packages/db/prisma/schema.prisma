@@ -11,32 +11,33 @@ datasource db {
 }
 
 model User {
-  id            String             @id @unique @default(cuid())
-  email         String             @unique
-  name          String
-  username      String             @unique
-  password      String
-  bannerColor   String?
-  oneLiner      String?
-  profileViews  Int                @default(0)
+  id             String             @id @unique @default(cuid())
+  email          String             @unique
+  name           String
+  username       String             @unique
+  password       String
+  bannerColor    String?
+  oneLiner       String?
+  profileViews   Int                @default(0)
   // a link to cdn
-  bannerImage   String?
+  bannerImage    String?
   // a link to cdn or dicebar avatar
-  profileImage  String?
-  notifications Notifications[]
-  verified      Boolean            @default(false)
-  forums        ForumMember[]
-  saved         Saved[]
-  Posts         Posts[]
-  Comments      Comments[]
-  createdAt     DateTime           @default(now())
-  followers     Follows[]          @relation("following")
-  following     Follows[]          @relation("follower")
-  Blog          Blog[]
-  tags          Tags[]
-  Series        Series[]
-  interests     ProfileInterests[]
+  profileImage   String?
+  notifications  Notifications[]
+  verified       Boolean            @default(false)
+  forums         ForumMember[]
+  saved          Saved[]
+  Posts          Posts[]
+  Comments       Comments[]
+  createdAt      DateTime           @default(now())
+  followers      Follows[]          @relation("following")
+  following      Follows[]          @relation("follower")
+  Blog           Blog[]
+  tags           Tags[]
+  Series         Series[]
+  interests      ProfileInterests[]
   githubUsername String?
+  repositories   Repositories[]
 }
 
 model Notifications {
@@ -175,4 +176,13 @@ model ProfileInterests {
   name  String
   icon  String
   color String? @default("cyan")
+}
+
+model Repositories {
+  id        String   @id @unique @default(cuid())
+  name      String
+  url       String
+  createdAt DateTime @default(now())
+  user      User[]
+  userId    String
 }
