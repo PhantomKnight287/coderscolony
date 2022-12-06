@@ -36,6 +36,7 @@ model User {
   tags          Tags[]
   Series        Series[]
   interests     ProfileInterests[]
+  githubUsername String?
 }
 
 model Notifications {
