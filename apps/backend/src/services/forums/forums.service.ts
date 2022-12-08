@@ -13,7 +13,6 @@ export class ForumsService {
       select: {
         bannerImage: true,
         createdAt: true,
-        description: true,
         name: true,
         profileImage: true,
         forumMembers: {
@@ -29,6 +28,7 @@ export class ForumsService {
           },
         },
         urlSlug: true,
+        bannerColor: true,
       },
     });
     if (!forumInfo)

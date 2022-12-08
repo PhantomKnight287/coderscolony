@@ -11,20 +11,33 @@ datasource db {
 }
 
 model User {
-  id            String          @id @unique @default(cuid())
-  email         String          @unique
-  name          String
-  username      String          @unique
-  password      String
-  bannerColor   String?
+  id             String             @id @unique @default(cuid())
+  email          String             @unique
+  name           String
+  username       String             @unique
+  password       String
+  bannerColor    String?
+  oneLiner       String?
+  profileViews   Int                @default(0)
   // a link to cdn
-  bannerImage   String?
+  bannerImage    String?
   // a link to cdn or dicebar avatar
-  profileImage  String?
-  notifications Notifications[]
-  verified      Boolean         @default(false)
-  forums        ForumMember[]
-  saved         Saved[]
+  profileImage   String?
+  notifications  Notifications[]
+  verified       Boolean            @default(false)
+  forums         ForumMember[]
+  saved          Saved[]
+  Posts          Posts[]
+  Comments       Comments[]
+  createdAt      DateTime           @default(now())
+  followers      Follows[]          @relation("following")
+  following      Follows[]          @relation("follower")
+  Blog           Blog[]
+  tags           Tags[]
+  Series         Series[]
+  interests      ProfileInterests[]
+  githubUsername String?
+  repositories   Repositories[]
 }
 
 model Notifications {
@@ -49,18 +62,19 @@ model Forums {
   id           String        @id @unique @default(cuid())
   name         String
   urlSlug      String        @unique
-  description  String?
   profileImage String?
   bannerImage  String?
+  bannerColor  String        @default("#C52184")
   forumMembers ForumMember[]
   createdAt    DateTime      @default(now())
   saves        Saved[]
+  posts        Posts[]
 }
 
 model ForumMember {
   id       String           @id @unique @default(cuid())
-  user     User             @relation(fields: [userId], references: [id])
-  forum    Forums           @relation(fields: [forumsId], references: [id])
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  forum    Forums           @relation(fields: [forumsId], references: [id], onDelete: Cascade)
   role     ForumMemberRoles
   userId   String
   forumsId String
@@ -80,9 +94,95 @@ enum SavedVariants {
 
 model Saved {
   id       String        @id @unique @default(cuid())
-  User     User          @relation(fields: [userId], references: [id])
+  User     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId   String
   variant  SavedVariants
-  forum    Forums?        @relation(fields: [forumsId], references: [id])
+  forum    Forums?       @relation(fields: [forumsId], references: [id], onDelete: Cascade)
   forumsId String?
+}
+
+model Posts {
+  id        String     @id @unique @default(cuid())
+  author    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  content   String
+  slug      String
+  createdAt DateTime   @default(now())
+  Forums    Forums     @relation(fields: [forumsId], references: [id], onDelete: Cascade)
+  forumsId  String
+  likedBy   String[]   @default([])
+  Comments  Comments[]
+}
+
+model Comments {
+  id        String   @id @unique @default(cuid())
+  author    User     @relation(fields: [userId], references: [id])
+  userId    String
+  createdAt DateTime @default(now())
+  post      Posts    @relation(fields: [postsId], references: [id])
+  postsId   String
+}
+
+model Follows {
+  follower    User   @relation("follower", fields: [followerId], references: [id])
+  followerId  String
+  following   User   @relation("following", fields: [followingId], references: [id])
+  followingId String
+
+  @@id([followerId, followingId])
+}
+
+model Blog {
+  id          String   @id @unique @default(cuid())
+  slug        String
+  title       String
+  description String   @default("No Description")
+  author      User     @relation(fields: [userId], references: [id])
+  userId      String
+  content     String
+  tags        Tags[]
+  ogImage     String?
+  createdAt   DateTime @default(now())
+  Series      Series?  @relation(fields: [seriesId], references: [id])
+  seriesId    String?
+}
+
+model Tags {
+  id       String   @id @unique @default(cuid())
+  name     String
+  logo     String
+  color    String
+  Blog     Blog[]
+  blogId   String?
+  User     User?    @relation(fields: [userId], references: [id])
+  userId   String?
+  Series   Series[]
+  seriesId String?
+}
+
+model Series {
+  id        String   @id @unique @default(cuid())
+  author    User     @relation(fields: [userId], references: [id])
+  slug      String
+  userId    String
+  blogs     Blog[]
+  tags      Tags[]
+  createdAt DateTime @default(now())
+}
+
+model ProfileInterests {
+  id    String  @id @unique @default(cuid())
+  users User[]
+  name  String
+  icon  String
+  color String? @default("cyan")
+}
+
+model Repositories {
+  id        String   @id @unique @default(cuid())
+  name      String
+  url       String
+  createdAt DateTime @default(now())
+  user      User[]
+  userId    String
 }

@@ -1,13 +1,13 @@
 .wrapper {
-  @media (min-width: 1024px) {
-    display: none;
-  }
+	@media (min-width: 1024px) {
+		display: none;
+	}
 }
 .contentWrapper {
-  @media (min-width: 1024px) {
-    display: inline;
-  }
-  @media (max-width:1024px) {
-    display: none;
-  }
+	@media (min-width: 1024px) {
+		display: inline;
+	}
+	@media (max-width: 1024px) {
+		display: none;
+	}
 }

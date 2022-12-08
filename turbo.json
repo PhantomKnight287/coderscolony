@@ -8,7 +8,14 @@
     "build": {
       "cache": true,
       "outputMode": "full",
-      "outputs": ["dist/**", ".next/**"]
+      "outputs": ["dist/**", ".next/**"],
+      "dependsOn": ["^build", "format", "lint"]
+    },
+    "format": {
+      "cache": false
+    },
+    "lint": {
+      "cache": true
     }
   }
 }

@@ -1,0 +1,10 @@
+.name {
+	&:hover {
+		text-decoration: underline;
+	}
+	line-clamp: 1;
+	-webkit-line-clamp: 1;
+	overflow: hidden;
+	white-space: nowrap;
+	width: 152px;
+}

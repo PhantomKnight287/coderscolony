@@ -1,5 +1,3 @@
-/* eslint-disable prettier/prettier */
-
 export const slugify = (str: string) =>
   str
     .toLowerCase()

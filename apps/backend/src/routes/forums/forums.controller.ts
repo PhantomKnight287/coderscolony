@@ -25,7 +25,6 @@ export class ForumsController {
     protected prisma: PrismaService,
     protected forums: ForumsService,
   ) {}
-
   @Get('list')
   async getForums(@Query('take') take: string) {
     const forums = await this.prisma.prisma.forums.findMany({
@@ -40,11 +39,15 @@ export class ForumsController {
         },
         createdAt: true,
         urlSlug: true,
-        description: true,
       },
-      orderBy: {
-        createdAt: 'asc',
-      },
+      orderBy: [
+        {
+          createdAt: 'asc',
+        },
+        {
+          forumMembers: { _count: 'desc' },
+        },
+      ],
       take: parseInt(take || '5'),
       skip: parseInt(take) > 5 ? parseInt(take) - 5 : undefined,
     });
@@ -80,7 +83,7 @@ export class ForumsController {
         message: error.details[0].message,
       });
     }
-    const { name, slug, description, profileURL } = body;
+    const { name, slug, profileURL } = body;
     let jwt: DecodedJWT;
     try {
       jwt = verify(token, process.env.JWT_SECRET) as unknown as DecodedJWT;
@@ -120,8 +123,8 @@ export class ForumsController {
       data: {
         name,
         urlSlug: slugify(slug),
-        description,
         profileImage: profileURL,
+        bannerColor: '#' + (((1 << 24) * Math.random()) | 0).toString(16),
       },
     });
 
@@ -152,8 +155,8 @@ export class ForumsController {
     });
     return res.status(200).json({ forum: newForum, admin });
   }
-  @Post(':id/join')
-  async JoinForum(@Token() token: string, @Param('id') id: string) {
+  @Post(':slug/join')
+  async JoinForum(@Token() token: string, @Param('slug') slug: string) {
     let jwt: DecodedJWT;
     try {
       jwt = verify(token, process.env.JWT_SECRET) as unknown as DecodedJWT;
@@ -165,7 +168,7 @@ export class ForumsController {
     }
     const forum = await this.prisma.prisma.forums.findFirst({
       where: {
-        id,
+        urlSlug: slugify(slug),
       },
     });
     if (!forum)
@@ -253,6 +256,96 @@ export class ForumsController {
     return {
       ...data,
       joined: hasUserJoinedForum ? true : false,
+      userRole: hasUserJoinedForum?.role,
     };
+  }
+  @Get(':slug/posts')
+  async getPosts(@Query('take') take: string, @Param('slug') slug: string) {
+    const posts = await this.prisma.prisma.posts.findMany({
+      where: {
+        Forums: {
+          urlSlug: slugify(slug),
+        },
+      },
+      select: {
+        author: {
+          select: {
+            username: true,
+            name: true,
+            profileImage: true,
+          },
+        },
+        content: true,
+        createdAt: true,
+        id: true,
+        slug: true,
+        likedBy: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: parseInt(take || '5'),
+      skip: parseInt(take) > 5 ? parseInt(take) - 5 : undefined,
+    });
+    const res: Record<string, any> = {
+      posts: posts.map((p) => ({ ...p, likedBy: p.likedBy.length })),
+    };
+    if (posts.length === 5) res['next'] = parseInt(take) + 5;
+    return res;
+  }
+  @Post(':slug/leave')
+  async leave(
+    @Param('slug') slug: string,
+    @Token({ validate: true }) { id }: DecodedJWT,
+  ) {
+    const user = await this.prisma.prisma.forumMember.findFirst({
+      where: {
+        user: {
+          id,
+        },
+        forum: {
+          urlSlug: slugify(slug),
+        },
+      },
+    });
+    if (!user)
+      throw new HttpException(
+        "You've not joined this forum.",
+        HttpStatus.NOT_FOUND,
+      );
+    const isUserAdmin = user.role === 'ADMIN';
+    let shouldForumBeDeleted = false;
+
+    const otherAdmins = await this.prisma.prisma.forumMember.findMany({
+      where: {
+        forum: {
+          urlSlug: slugify(slug),
+        },
+        role: 'ADMIN',
+        user: {
+          NOT: {
+            id,
+          },
+        },
+      },
+    });
+    if (otherAdmins.length === 0 && isUserAdmin) {
+      shouldForumBeDeleted = true;
+    }
+    await this.prisma.prisma.forumMember.delete({
+      where: {
+        id: user.id,
+      },
+    });
+    if (shouldForumBeDeleted === true) {
+      await this.prisma.prisma.forums.delete({
+        where: {
+          urlSlug: slugify(slug),
+        },
+      });
+    }
+    const res: Record<string, boolean> = {};
+    if (shouldForumBeDeleted) res['goBack'] = true;
+    return res;
   }
 }

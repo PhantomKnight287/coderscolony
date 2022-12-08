@@ -6,8 +6,8 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "pnpm prebuild && tsc",
-    "prebuild": "prisma generate && prisma db push",
-    "dev":"pnpm build"
+    "prebuild": "prisma generate",
+    "dev": "pnpm build"
   },
   "keywords": [],
   "author": "",
@@ -17,7 +17,7 @@
     "typescript": "^4.7.4"
   },
   "dependencies": {
-    "@prisma/client": "^4.5.0",
-    "prisma": "^4.5.0"
+    "@prisma/client": "^4.6.1",
+    "prisma": "^4.6.1"
   }
 }
