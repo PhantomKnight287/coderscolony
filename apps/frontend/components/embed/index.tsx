@@ -49,13 +49,6 @@ function Embed(props: any) {
 			});
 	}
 
-	//   useEffect(() => {
-	//     const token = axios.CancelToken.source();
-	//     fetchUrlMetaData(props.href, token.token);
-	//     return () => {
-	//       token.cancel();
-	//     };
-	//   }, [props.href]);
 	return (
 		<>
 			<a
@@ -79,6 +72,7 @@ function Embed(props: any) {
 							<Image
 								src={metaData.image}
 								className="aspect-square max-h-[300px]"
+								alt="image"
 							/>
 						</Card.Section>
 					) : null}
