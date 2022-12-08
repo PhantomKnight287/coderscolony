@@ -21,6 +21,7 @@ import { DrawerProvider } from "../context/drawer";
 import { SidebarProvider } from "../context/sidebar";
 import "../styles/code.scss";
 import { SessionProvider } from "next-auth/react";
+import { inter } from "@fonts/index";
 
 export const client = new QueryClient();
 
@@ -48,7 +49,7 @@ export default function App(props: AppProps) {
 								<MantineProvider
 									theme={{
 										colorScheme,
-										fontFamily: "Inter",
+										fontFamily: inter.style.fontFamily,
 										white: "#ffffff",
 										globalStyles: (theme) => ({
 											body: {
