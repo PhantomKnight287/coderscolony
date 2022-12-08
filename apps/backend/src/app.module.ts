@@ -23,6 +23,7 @@ import { ForumEditController } from './routes/forum-edit/forum-edit.controller';
 import { EditableService } from './services/editable/editable.service';
 import { SeriesController } from './routes/series/series.controller';
 import { UserService } from './services/user/user.service';
+import { BlogEditController } from './routes/blog-edit/blog-edit.controller';
 
 @Module({
   imports: [],
@@ -42,6 +43,7 @@ import { UserService } from './services/user/user.service';
     EditableController,
     ForumEditController,
     SeriesController,
+    BlogEditController,
   ],
   providers: [
     AppService,
