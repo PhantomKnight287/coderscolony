@@ -37,7 +37,7 @@ export default function BlogsPage() {
 	}>(["all-blogs"], (d) => fetcher({ pageParam: d.pageParam }), {
 		getNextPageParam: (lastPage, all) => lastPage.next,
 	});
-	useCollapsedSidebar()
+	useCollapsedSidebar();
 	useEffect(() => {
 		if (opened === true) return setOpened(false);
 		return () => setOpened(true);
