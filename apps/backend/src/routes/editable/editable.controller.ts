@@ -7,11 +7,15 @@ import {
 } from '@nestjs/common';
 import { Token } from 'src/decorators/token/token.decorator';
 import { slugify } from 'src/helpers/slugify';
+import { EditableService } from 'src/services/editable/editable.service';
 import { PrismaService } from 'src/services/prisma/prisma.service';
 import { DecodedJWT } from 'src/types/jwt';
 @Controller('editable')
 export class EditableController {
-  constructor(protected prisma: PrismaService) {}
+  constructor(
+    protected prisma: PrismaService,
+    protected editable: EditableService,
+  ) {}
 
   @Get('forum/:slug')
   async isForumEditable(
@@ -56,5 +60,17 @@ export class EditableController {
         forumMember.role === 'ADMIN' || forumMember.role === 'MODERATOR',
       joined: true,
     };
+  }
+  @Get('blog/:slug')
+  async isBlogEditable(
+    @Token({ validate: true }) { id }: DecodedJWT,
+    @Param('slug') slug: string,
+  ) {
+    const { editable, message, status } = await this.editable.isBlogEditable(
+      id,
+      slug,
+    );
+    if (editable === false) throw new HttpException(message, status);
+    return { editable };
   }
 }
