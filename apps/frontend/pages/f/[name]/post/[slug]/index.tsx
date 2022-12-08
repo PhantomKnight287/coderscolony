@@ -1,5 +1,5 @@
+import { Container } from "@components/container";
 import { MetaTags } from "@components/meta";
-import ForumPost from "@components/post/forum-post";
 import { PostAuthor } from "@components/post/forum-post/post-author";
 import { Renderer } from "@components/renderer";
 import { PostToolBar } from "@components/toolbar/per-post";
@@ -7,7 +7,8 @@ import { readCookie } from "@helpers/cookies";
 import { getMarkdownString } from "@helpers/showdown";
 import { useHydrateUserContext } from "@hooks/hydrate/context";
 import { useSidebar } from "@hooks/sidebar";
-import { Container, Loader, LoadingOverlay } from "@mantine/core";
+import useCollapsedSidebar from "@hooks/sidebar/use-collapsed-sidebar";
+import { Loader, LoadingOverlay } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import { likePost } from "@services/post-actions";
 import { IconArrowLeft } from "@tabler/icons";
@@ -20,23 +21,16 @@ import {
 } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { SinglePost } from "../../../../../types/forum-post";
 
 const PostsPage: NextPage<{
 	pageProps: InferGetStaticPropsType<typeof getStaticProps>;
 }> = ({ pageProps }) => {
 	useHydrateUserContext();
-	const { setOpened, opened } = useSidebar();
 	const { query } = useRouter();
 	const [likes, setLikes] = useState(pageProps.post.likedBy || 0);
-	useEffect(() => {
-		console.log(pageProps.post);
-		if (opened == true) {
-			setOpened(false);
-		}
-		return () => setOpened(true);
-	}, []);
+	useCollapsedSidebar();
 	return (
 		<Container>
 			<MetaTags
