@@ -6,6 +6,7 @@ import { useHydrateUserContext } from "@hooks/hydrate/context";
 import { useSidebar } from "@hooks/sidebar";
 import {
 	Avatar,
+	Button,
 	Container,
 	Divider,
 	Group,
@@ -25,21 +26,37 @@ import {
 	NextPage,
 } from "next";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Blogs } from "~types/blog";
 import { monthNames } from "../../../../../constants/months";
+import { isBlogEditable } from "@services/editable";
+import { readCookie } from "@helpers/cookies";
+import { useRouter } from "next/router";
+import { IconPencil } from "@tabler/icons";
 
 const BlogPage: NextPage<{
 	pageProps: InferGetStaticPropsType<typeof getStaticProps>;
 }> = ({ pageProps }) => {
 	const { colorScheme } = useMantineColorScheme();
 	const { opened, setOpened } = useSidebar();
+	const [editable, setEditable] = useState(false);
+	const { query, isReady, asPath, push } = useRouter();
 	useHydrateUserContext();
 
 	useEffect(() => {
 		if (opened) return setOpened(false);
 		return () => setOpened(true);
 	}, [opened]);
+
+	useEffect(() => {
+		if (!isReady) return;
+		isBlogEditable(readCookie("token")!, query.slug as string)
+			.then((d) => d.data)
+			.then((d) => {
+				setEditable(d.editable);
+			})
+			.catch((err) => {});
+	}, [isReady]);
 
 	return (
 		<>
@@ -95,6 +112,20 @@ const BlogPage: NextPage<{
 						</Text>
 					</div>
 				</Group>
+				<div className="flex flex-col items-center justify-center">
+					{editable === true ? (
+						<button
+							style={{
+								appearance: "none",
+							}}
+							onClick={() => {
+								push(`${asPath}/edit`);
+							}}
+						>
+							<IconPencil cursor={"pointer"} size={20} />
+						</button>
+					) : null}
+				</div>
 				<Divider mt="lg" mb="md" />
 				{typeof window !== "undefined" ? (
 					<Renderer
