@@ -20,6 +20,7 @@ import Layout from "../layouts";
 import { DrawerProvider } from "../context/drawer";
 import { SidebarProvider } from "../context/sidebar";
 import "../styles/code.scss";
+import { SessionProvider } from "next-auth/react";
 
 export const client = new QueryClient();
 
@@ -35,96 +36,102 @@ export default function App(props: AppProps) {
 		setColorScheme(value || (colorScheme === "dark" ? "light" : "dark"));
 
 	return (
-		<SidebarProvider>
-			<QueryClientProvider client={client}>
-				<DrawerProvider>
-					<UserProvider>
-						<ColorSchemeProvider
-							colorScheme={colorScheme}
-							toggleColorScheme={toggleColorScheme}
-						>
-							<MantineProvider
-								theme={{
-									colorScheme,
-									fontFamily: "Inter",
-									white: "#ffffff",
-									globalStyles: (theme) => ({
-										body: {
-											backgroundColor:
-												theme.colorScheme === "dark"
-													? "#171718"
-													: "unset",
-										},
-									}),
-								}}
-								withGlobalStyles
-								withNormalizeCSS
-								withCSSVariables
+		<SessionProvider session={props.pageProps.session}>
+			<SidebarProvider>
+				<QueryClientProvider client={client}>
+					<DrawerProvider>
+						<UserProvider>
+							<ColorSchemeProvider
+								colorScheme={colorScheme}
+								toggleColorScheme={toggleColorScheme}
 							>
-								<SpotlightProvider
-									actions={[
-										{
-											title: "Toggle Theme",
-											onTrigger: () =>
-												toggleColorScheme(),
-											description:
-												"Toggle Theme Between Light and Dark Mode",
-											icon:
-												colorScheme === "dark" ? (
-													<IconSunHigh size={24} />
-												) : (
-													<IconMoonStars size={24} />
-												),
-											keywords: [
-												"theme",
-												"dark",
-												"light",
-											],
-										},
-									]}
-									shortcut="mod + J"
+								<MantineProvider
+									theme={{
+										colorScheme,
+										fontFamily: "Inter",
+										white: "#ffffff",
+										globalStyles: (theme) => ({
+											body: {
+												backgroundColor:
+													theme.colorScheme === "dark"
+														? "#171718"
+														: "unset",
+											},
+										}),
+									}}
+									withGlobalStyles
+									withNormalizeCSS
+									withCSSVariables
 								>
-									<NotificationsProvider>
-										<ModalsProvider>
-											<Header />
-											<ReactQueryDevtools />
-											<RouterTransition />
-											<Layout>
-												<AnimatePresence mode="wait">
-													<motion.div
-														variants={{
-															initial: {
-																opacity: 0,
-															},
-															animate: {
-																opacity: 1,
-															},
-															exit: {
-																opacity: 0,
-															},
-														}}
-														initial="initial"
-														animate="animate"
-														exit="exit"
-														key={
-															pageProps.router
-																.pathname
-														}
-													>
-														<Component
-															{...pageProps}
+									<SpotlightProvider
+										actions={[
+											{
+												title: "Toggle Theme",
+												onTrigger: () =>
+													toggleColorScheme(),
+												description:
+													"Toggle Theme Between Light and Dark Mode",
+												icon:
+													colorScheme === "dark" ? (
+														<IconSunHigh
+															size={24}
 														/>
-													</motion.div>
-												</AnimatePresence>
-											</Layout>
-										</ModalsProvider>
-									</NotificationsProvider>
-								</SpotlightProvider>
-							</MantineProvider>
-						</ColorSchemeProvider>
-					</UserProvider>
-				</DrawerProvider>
-			</QueryClientProvider>
-		</SidebarProvider>
+													) : (
+														<IconMoonStars
+															size={24}
+														/>
+													),
+												keywords: [
+													"theme",
+													"dark",
+													"light",
+												],
+											},
+										]}
+										shortcut="mod + J"
+									>
+										<NotificationsProvider>
+											<ModalsProvider>
+												<Header />
+												<ReactQueryDevtools />
+												<RouterTransition />
+												<Layout>
+													<AnimatePresence mode="wait">
+														<motion.div
+															variants={{
+																initial: {
+																	opacity: 0,
+																},
+																animate: {
+																	opacity: 1,
+																},
+																exit: {
+																	opacity: 0,
+																},
+															}}
+															initial="initial"
+															animate="animate"
+															exit="exit"
+															key={
+																pageProps.router
+																	.pathname
+															}
+														>
+															<Component
+																{...pageProps}
+															/>
+														</motion.div>
+													</AnimatePresence>
+												</Layout>
+											</ModalsProvider>
+										</NotificationsProvider>
+									</SpotlightProvider>
+								</MantineProvider>
+							</ColorSchemeProvider>
+						</UserProvider>
+					</DrawerProvider>
+				</QueryClientProvider>
+			</SidebarProvider>
+		</SessionProvider>
 	);
 }
