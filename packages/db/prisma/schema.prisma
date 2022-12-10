@@ -38,6 +38,7 @@ model User {
   interests      ProfileInterests[]
   githubUsername String?
   repositories   Repositories[]
+  likes          String[]
 }
 
 model Notifications {
