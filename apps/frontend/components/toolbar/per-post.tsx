@@ -28,7 +28,7 @@ export function PostToolBar(props: Props) {
 							size={22}
 							color={theme.colors.red[6]}
 							stroke={1.5}
-							fill={props.liked ? theme.colors.red[6] : undefined}
+							fill={props.liked ? theme.colors.red[6] : "none"}
 						/>
 					</ActionIcon>
 					{props.likes != undefined ? (
