@@ -88,9 +88,9 @@ export class CommentsServiceService {
         content: true,
         id: true,
       },
-      orderBy:{
-        createdAt:'desc'
-      }
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
   }
   async createBlogComment(blogId: string, userId: string, content: string) {

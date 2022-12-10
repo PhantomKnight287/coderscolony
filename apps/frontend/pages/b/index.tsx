@@ -67,7 +67,7 @@ export default function BlogsPage() {
 						</Fragment>
 					))
 				)}
-				<Group ref={ref} position="center" my="md" >
+				<Group ref={ref} position="center" my="md">
 					{isFetchingNextPage ? (
 						"Loading more..."
 					) : hasNextPage ? (

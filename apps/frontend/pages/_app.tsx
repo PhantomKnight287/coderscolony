@@ -114,13 +114,13 @@ export default function App(props: AppProps) {
 															// }}
 															variants={{
 																exit: {
-																  filter: "blur(8px)",
+																	filter: "blur(8px)",
 																},
 																enter: {
-																  filter: "blur(0px)",
+																	filter: "blur(0px)",
 																},
-															  }}
-															  animate="enter"
+															}}
+															animate="enter"
 															initial="initial"
 															// animate="animate"
 															exit="exit"
