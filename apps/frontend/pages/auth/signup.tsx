@@ -20,6 +20,7 @@ import { createCookie, readCookie } from "@helpers/cookies";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { useHydrateUserContext } from "@hooks/hydrate/context";
+import useCollapsedSidebar from "@hooks/sidebar/use-collapsed-sidebar";
 
 export default function SignUP() {
 	const formState = useForm({
@@ -37,11 +38,12 @@ export default function SignUP() {
 	const dispatch = useUserDispatch();
 	const { id } = useUser();
 	const { replace } = useRouter();
+	useCollapsedSidebar();
 	const handleFormSubmit = (e: typeof formState.values) => {
 		signUp(e)
 			.then((d) => d.data)
 			.then((d) => {
-				createCookie("token", d.token, 30);
+				createCookie("token", d.token);
 				dispatch({
 					type: "SetUser",
 					payload: d.user,
