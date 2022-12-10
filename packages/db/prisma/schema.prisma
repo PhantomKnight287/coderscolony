@@ -118,9 +118,12 @@ model Comments {
   id        String   @id @unique @default(cuid())
   author    User     @relation(fields: [userId], references: [id])
   userId    String
+  content   String
   createdAt DateTime @default(now())
-  post      Posts    @relation(fields: [postsId], references: [id])
-  postsId   String
+  post      Posts?   @relation(fields: [postsId], references: [id])
+  postsId   String?
+  Blog      Blog?    @relation(fields: [blogId], references: [id])
+  blogId    String?
 }
 
 model Follows {
@@ -133,18 +136,20 @@ model Follows {
 }
 
 model Blog {
-  id          String   @id @unique @default(cuid())
+  id          String     @id @unique @default(cuid())
   slug        String
   title       String
-  description String   @default("No Description")
-  author      User     @relation(fields: [userId], references: [id])
+  description String     @default("No Description")
+  author      User       @relation(fields: [userId], references: [id])
   userId      String
   content     String
   tags        Tags[]
   ogImage     String?
-  createdAt   DateTime @default(now())
-  Series      Series?  @relation(fields: [seriesId], references: [id])
+  createdAt   DateTime   @default(now())
+  Series      Series?    @relation(fields: [seriesId], references: [id])
   seriesId    String?
+  likes       String[]
+  comments    Comments[]
 }
 
 model Tags {
