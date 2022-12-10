@@ -134,4 +134,49 @@ export class ProfileController {
     });
     return 'ok';
   }
+  @Post(':username')
+  async updateProfileViews(
+    @Param('username') username: string,
+    @Token({ validate: true }) { id },
+  ) {
+    const user = await this.prisma.prisma.user.findFirst({
+      where: {
+        id,
+      },
+    });
+    if (!user)
+      throw new HttpException(
+        'No user account associated with provided authentication credentials.',
+        HttpStatus.NOT_FOUND,
+      );
+    const userAccount = await this.prisma.prisma.user.findFirst({
+      where: {
+        username: {
+          equals: username,
+          mode: 'insensitive',
+        },
+      },
+    });
+    if (!userAccount)
+      throw new HttpException('No User Account Found', HttpStatus.NOT_FOUND);
+    if (user.id === userAccount.id)
+      throw new HttpException(
+        "You can't add view on your own profile.",
+        HttpStatus.FORBIDDEN,
+      );
+    const isViewAlreadyAdded = userAccount.views.includes(user.id);
+    if (isViewAlreadyAdded)
+      throw new HttpException('View Already Added.', HttpStatus.CONFLICT);
+    await this.prisma.prisma.user.update({
+      where: {
+        id: userAccount.email,
+      },
+      data: {
+        views: {
+          push: user.id,
+        },
+      },
+    });
+    return { viewed: true };
+  }
 }
