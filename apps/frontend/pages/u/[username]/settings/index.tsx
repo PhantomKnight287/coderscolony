@@ -63,6 +63,7 @@ export default function SettingsPage() {
 		useState(false);
 
 	async function fetcher(): Promise<Partial<User> | null> {
+		console.log(readCookie("token"));
 		const data = await fetch(`/api/auth/settings`, {
 			headers: {
 				Authorization: `Bearer ${readCookie("token")}`,
@@ -130,6 +131,7 @@ export default function SettingsPage() {
 														user.bannerImage
 													)}
 													className="rounded-md overflow-hidden object-cover"
+													alt="Banner Image"
 												/>
 												<div
 													className="absolute"
