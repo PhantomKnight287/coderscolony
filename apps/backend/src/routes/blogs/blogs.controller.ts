@@ -15,6 +15,7 @@ import { PrismaService } from 'src/services/prisma/prisma.service';
 import { DecodedJWT } from 'src/types/jwt';
 import * as nanoid from 'nanoid';
 import { CreateBlogValidator } from 'src/validators/blog.validator';
+import { readingTime } from 'src/modules/reading-time';
 
 interface CreateBlog {
   title: string;
@@ -80,7 +81,6 @@ export class BlogsController {
     @Token({ validate: true }) { id }: DecodedJWT,
     @Body() body: CreateBlog,
   ) {
-    console.log(body);
     try {
       await CreateBlogValidator.validateAsync(body);
     } catch (e) {
@@ -218,6 +218,6 @@ export class BlogsController {
       },
     });
     if (!blog) throw new HttpException('No Blog Found', HttpStatus.NOT_FOUND);
-    return blog;
+    return { ...blog, readTime: readingTime(blog.content).text };
   }
 }
