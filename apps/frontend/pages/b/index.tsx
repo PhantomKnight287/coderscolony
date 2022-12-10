@@ -4,7 +4,7 @@ import { MetaTags } from "@components/meta";
 import { useHydrateUserContext } from "@hooks/hydrate/context";
 import { useSidebar } from "@hooks/sidebar";
 import useCollapsedSidebar from "@hooks/sidebar/use-collapsed-sidebar";
-import { Button, Container, Loader, SimpleGrid } from "@mantine/core";
+import { Button, Container, Group, Loader, SimpleGrid } from "@mantine/core";
 import { useIntersection } from "@mantine/hooks";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Fragment, useEffect, useRef } from "react";
@@ -67,7 +67,7 @@ export default function BlogsPage() {
 						</Fragment>
 					))
 				)}
-				<div ref={ref}>
+				<Group ref={ref} position="center" my="md" >
 					{isFetchingNextPage ? (
 						"Loading more..."
 					) : hasNextPage ? (
@@ -75,14 +75,14 @@ export default function BlogsPage() {
 							variant="outline"
 							color={"green"}
 							onClick={() => fetchNextPage()}
-							disabled={!hasNextPage || !isFetchingNextPage}
+							disabled={isFetchingNextPage}
 						>
 							Load More
 						</Button>
 					) : (
 						"Nothing more to load"
 					)}
-				</div>
+				</Group>
 				<div>
 					{isFetching && !isFetchingNextPage ? "Fetching..." : null}
 				</div>
