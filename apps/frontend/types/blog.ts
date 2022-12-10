@@ -7,4 +7,5 @@ export type Blogs = Partial<Blog> & {
 		profileImage: string;
 		id: string;
 	};
+	readTime: string;
 };
