@@ -94,4 +94,25 @@ export class StatsController {
     const liked = jwt !== undefined ? blog.likes.includes(jwt.id) : false;
     return { likes, liked };
   }
+  @Get(':username')
+  async getProfileStats(@Param('username') username: string) {
+    const data = await this.prisma.prisma.user.findFirst({
+      where: {
+        username: {
+          equals: username,
+          mode: 'insensitive',
+        },
+      },
+      include: {
+        followers: true,
+        following: true,
+      },
+    });
+    if (!data) throw new HttpException('User Not Found', HttpStatus.NOT_FOUND);
+    return {
+      views: data.views.length,
+      followers: data.followers.length,
+      following: data.following.length,
+    };
+  }
 }
