@@ -99,19 +99,30 @@ export default function App(props: AppProps) {
 												<Layout>
 													<AnimatePresence mode="wait">
 														<motion.div
+															// variants={{
+															// 	initial: {
+															// 		opacity: 0,
+															// 		backdropFilter:"blur(8px)"
+															// 	},
+															// 	animate: {
+															// 		opacity: 1,
+															// 		backdropFilter:"blur(0px)"
+															// 	},
+															// 	exit: {
+															// 		opacity: 0,
+															// 	},
+															// }}
 															variants={{
-																initial: {
-																	opacity: 0,
-																},
-																animate: {
-																	opacity: 1,
-																},
 																exit: {
-																	opacity: 0,
+																  filter: "blur(8px)",
 																},
-															}}
+																enter: {
+																  filter: "blur(0px)",
+																},
+															  }}
+															  animate="enter"
 															initial="initial"
-															animate="animate"
+															// animate="animate"
 															exit="exit"
 															key={
 																pageProps.router
