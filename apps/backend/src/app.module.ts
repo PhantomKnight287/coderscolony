@@ -24,9 +24,21 @@ import { EditableService } from './services/editable/editable.service';
 import { SeriesController } from './routes/series/series.controller';
 import { UserService } from './services/user/user.service';
 import { BlogEditController } from './routes/blog-edit/blog-edit.controller';
+import { CommentsController } from './routes/comments/comments.controller';
+import { CommentsServiceService } from './services/comments-service/comments-service.service';
+import { StatsController } from './routes/stats/stats.controller';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+import { BlogStatsController } from './routes/blog-stats/blog-stats.controller';
+import { BlogActionsController } from './routes/blog-actions/blog-actions.controller';
 
 @Module({
-  imports: [],
+  imports: [
+    ThrottlerModule.forRoot({
+      ttl: 60,
+      limit: 100,
+    }),
+  ],
   controllers: [
     AppController,
     AuthController,
@@ -44,6 +56,10 @@ import { BlogEditController } from './routes/blog-edit/blog-edit.controller';
     ForumEditController,
     SeriesController,
     BlogEditController,
+    CommentsController,
+    StatsController,
+    BlogStatsController,
+    BlogActionsController,
   ],
   providers: [
     AppService,
@@ -55,6 +71,11 @@ import { BlogEditController } from './routes/blog-edit/blog-edit.controller';
     VerifyUserService,
     EditableService,
     UserService,
+    CommentsServiceService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}
