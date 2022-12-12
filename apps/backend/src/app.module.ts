@@ -31,6 +31,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { BlogStatsController } from './routes/blog-stats/blog-stats.controller';
 import { BlogActionsController } from './routes/blog-actions/blog-actions.controller';
+import { InterestsController } from './routes/interests/interests.controller';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { BlogActionsController } from './routes/blog-actions/blog-actions.contro
     StatsController,
     BlogStatsController,
     BlogActionsController,
+    InterestsController,
   ],
   providers: [
     AppService,
