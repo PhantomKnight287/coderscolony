@@ -6,7 +6,7 @@ export const profileImageResolver = ({
 	username: string;
 }) => {
 	return profileURL
-		? profileURL.startsWith("https://avatar.dicebar")
+		? profileURL.startsWith("https://avatars.dicebear.com/api/big-smile")
 			? profileURL
 			: `/images/${profileURL}`
 		: `https://avatars.dicebear.com/api/big-smile/${username}.svg`;
