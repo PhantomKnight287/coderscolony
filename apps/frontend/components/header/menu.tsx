@@ -1,3 +1,4 @@
+import { profileImageResolver } from "@helpers/profile-url";
 import { useHydrateUserContext } from "@hooks/hydrate/context";
 import { useUser } from "@hooks/user";
 import { Menu, Text, Avatar } from "@mantine/core";
@@ -29,15 +30,10 @@ export function UserMenu() {
 				<Menu.Target>
 					<div className="flex flex-row hover:bg-[#5c5f6659] duration-75 rounded-md p-2 items-center">
 						<Avatar
-							src={
-								profileImage
-									? profileImage.startsWith(
-											"https://avatar.dicebar"
-									  )
-										? profileImage
-										: `/images/${profileImage}`
-									: `https://avatars.dicebear.com/api/big-smile/${username}.svg`
-							}
+							src={profileImageResolver({
+								profileURL: profileImage!,
+								username,
+							})}
 							radius="xl"
 							size="md"
 						/>
