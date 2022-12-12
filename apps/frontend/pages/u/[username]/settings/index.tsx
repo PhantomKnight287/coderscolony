@@ -1,13 +1,18 @@
 import { SingleFileDropzone } from "@components/dropzones/single";
 import { MetaTags } from "@components/meta";
+import { SelectItem } from "@components/select/item";
+import { icons, Value } from "@components/select/value";
 import { readCookie } from "@helpers/cookies";
-import { imageResolver } from "@helpers/profile-url";
+import { imageResolver, profileImageResolver } from "@helpers/profile-url";
 import { useHydrateUserContext } from "@hooks/hydrate/context";
 import useCollapsedSidebar from "@hooks/sidebar/use-collapsed-sidebar";
 import { useUser } from "@hooks/user";
 import {
 	Avatar,
+	Badge,
 	Button,
+	Card,
+	Center,
 	ColorInput,
 	ColorPicker,
 	Container,
@@ -15,15 +20,18 @@ import {
 	Group,
 	Image,
 	Modal,
+	MultiSelect,
 	SimpleGrid,
 	Skeleton,
 	Tabs,
 	Text,
 	TextInput,
+	useMantineTheme,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useForceUpdate } from "@mantine/hooks";
 import { showNotification } from "@mantine/notifications";
+import { createInterest, fetchInterest } from "@services/interest";
 import {
 	RemoveBannerImage,
 	UpdateBannerImage,
@@ -34,10 +42,13 @@ import {
 	updateProfile,
 } from "@services/profile-actions";
 import { uploadSingleFile } from "@services/upload";
+import { IconHeart } from "@tabler/icons";
 import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
 import clsx from "clsx";
 import { User } from "db";
 import { useEffect, useState } from "react";
+import { interest } from "~types/interest";
 
 const useStyles = createStyles((theme) => ({
 	image: {
@@ -61,16 +72,24 @@ export default function SettingsPage() {
 		useState(false);
 	const [profileImageUploadLoading, setProfileImageUploadLoading] =
 		useState(false);
-
-	async function fetcher(): Promise<Partial<User> | null> {
-		console.log(readCookie("token"));
+	const theme = useMantineTheme();
+	const newInterestFormState = useForm({
+		initialValues: {
+			name: "",
+			icon: "",
+			color: "",
+		},
+	});
+	async function fetcher(): Promise<
+		(Partial<User> & { tags: string[] }) | null
+	> {
 		const data = await fetch(`/api/auth/settings`, {
 			headers: {
 				Authorization: `Bearer ${readCookie("token")}`,
 			},
 		});
 		if (data.ok) return await data.json();
-		console.log(await data.json());
+
 		return null;
 	}
 
@@ -93,89 +112,73 @@ export default function SettingsPage() {
 	const [oneLiner, setOneLiner] = useState(user?.oneLiner || "");
 	const [name, setName] = useState(user?.name || "");
 	const [color, setColor] = useState(user?.bannerColor || "");
-
+	const [interest, setInterest] = useState<interest>([]);
+	const [createNewInterestModalOpened, setCreateNewInterestModalOpened] =
+		useState(false);
+	const [createNewInterestLoading, setCreateNewInterestLoading] =
+		useState(false);
+	const [tags, setTags] = useState<Array<string>>([]);
 	useEffect(() => {
 		fetcher().then((d) => {
 			if (d === null) return;
-			console.log(d);
 			setUsername(d.username || "");
 			setEmail(d.email || "");
 			setOneLiner(d.oneLiner || "");
 			setName(d.name || "");
 			setColor(d.bannerColor || "");
+			setTags(d.tags || []);
 		});
 	}, []);
+
+	useEffect(() => {
+		fetchInterest()
+			.then((d) => setInterest(d.data))
+			.catch((err) => {
+				showNotification({
+					message:
+						err?.response?.data?.message || "Something went wrong",
+					color: "red",
+				});
+			});
+	}, []);
+
+	const Icon = icons[newInterestFormState.values.icon];
 
 	return (
 		<>
 			<MetaTags description="Update Your Profile" title="Settings" />
 			<Container>
-				<Skeleton visible={isLoading} className="mt-16 h-[100%] mb-5">
-					{error ? (
-						<p> (error as Error).message </p>
-					) : user ? (
-						<div>
-							{user.bannerColor || user.bannerImage ? (
-								<div className="flex flex-col items-center justify-center">
-									{user.bannerImage ? (
-										<Skeleton visible={!imageLoaded}>
-											<div className="relative">
-												<Image
-													classNames={{
-														image: classes.image,
-													}}
-													onLoad={() =>
-														setImageLoaded(true)
-													}
-													src={imageResolver(
-														user.bannerImage
-													)}
-													className="rounded-md overflow-hidden object-cover"
-													alt="Banner Image"
-												/>
-												<div
-													className="absolute"
-													style={{
-														right: "24px",
-														bottom: "24px",
-													}}
-												>
-													<Button
-														className="bg-[#4595d0] hover:bg-[#317fb9]"
-														onClick={() =>
-															setBannerImageUploadModalOpened(
-																(o) => !o
-															)
-														}
-													>
-														Change
-													</Button>
-													<Button
-														className="ml-3  bg-red-600 hover:bg-red-800"
-														onClick={async () =>
-															await RemoveBannerImage(
-																username!,
-																readCookie(
-																	"token"
-																)!
-															).then(refetch)
-														}
-													>
-														Remove
-													</Button>
-												</div>
-											</div>
-										</Skeleton>
-									) : user.bannerColor ? (
-										<div className="relative w-[100%]">
-											<div
-												className="rounded-md overflow-hidden max-h-[300px] h-[300px] w-[100%]"
-												style={{
-													backgroundColor:
-														user.bannerColor,
+				<Skeleton visible={isLoading} className="mt-16 pb-5" />
+
+				{error && isLoading === false ? (
+					<p> (error as Error).message </p>
+				) : user && isLoading === false ? (
+					<div>
+						{user.bannerColor || user.bannerImage ? (
+							<div className="flex flex-col items-center justify-center">
+								{user.bannerImage ? (
+									<Skeleton visible={!imageLoaded}>
+										<div className="relative">
+											<Image
+												classNames={{
+													image: classes.image,
 												}}
-											></div>
-											<div className="absolute right-[24px] bottom-[24px] ">
+												onLoad={() =>
+													setImageLoaded(true)
+												}
+												src={imageResolver(
+													user.bannerImage
+												)}
+												className="rounded-md overflow-hidden object-cover"
+												alt="Banner Image"
+											/>
+											<div
+												className="absolute"
+												style={{
+													right: "24px",
+													bottom: "24px",
+												}}
+											>
 												<Button
 													className="bg-[#4595d0] hover:bg-[#317fb9]"
 													onClick={() =>
@@ -187,114 +190,187 @@ export default function SettingsPage() {
 													Change
 												</Button>
 												<Button
-													className="bg-[#4595d0] hover:bg-[#317fb9] ml-3"
-													onClick={() =>
-														setBannerImageUploadModalOpened(
-															(o) => !o
-														)
+													className="ml-3  bg-red-600 hover:bg-red-800"
+													onClick={async () =>
+														await RemoveBannerImage(
+															username!,
+															readCookie("token")!
+														).then(refetch)
 													}
 												>
-													Change Color
+													Remove
 												</Button>
 											</div>
 										</div>
-									) : null}
-								</div>
-							) : null}
-							<div
-								className={clsx(
-									"w-max h-max  flex items-center justify-center mt-2 "
-								)}
-							>
-								<Avatar
-									src={
-										user.profileImage
-											? user.profileImage.startsWith(
-													"https://avatar.dicebar"
-											  )
-												? user.profileImage
-												: `/images/${user.profileImage}`
-											: `https://avatars.dicebear.com/api/big-smile/${user.username}.svg`
-									}
-									size={160}
-									radius={80}
-									onClick={() =>
-										setProfileImageModalOpened((o) => !o)
-									}
-									className="bg-[#171718] border-4 ml-[20px] cursor-pointer border-[#171718]"
-								/>
-								<Text ml="xl">
-									Click on image to upload a new image
-								</Text>
+									</Skeleton>
+								) : user.bannerColor ? (
+									<div className="relative w-[100%]">
+										<div
+											className="rounded-md overflow-hidden max-h-[300px] h-[300px] w-[100%]"
+											style={{
+												backgroundColor: color,
+											}}
+										></div>
+										<div className="absolute right-[24px] bottom-[24px] ">
+											<Button
+												className="bg-[#4595d0] hover:bg-[#317fb9]"
+												onClick={() =>
+													setBannerImageUploadModalOpened(
+														(o) => !o
+													)
+												}
+											>
+												Change
+											</Button>
+											<Button
+												className="bg-[#4595d0] hover:bg-[#317fb9] ml-3"
+												onClick={() =>
+													setBannerImageUploadModalOpened(
+														(o) => !o
+													)
+												}
+											>
+												Change Color
+											</Button>
+										</div>
+									</div>
+								) : null}
 							</div>
+						) : null}
+						<div
+							className={clsx(
+								"w-max h-max  flex items-center justify-center mt-2 "
+							)}
+						>
+							<Avatar
+								src={profileImageResolver({
+									profileURL: user.profileImage!,
+									username: user.username!,
+								})}
+								size={160}
+								radius={80}
+								onClick={() =>
+									setProfileImageModalOpened((o) => !o)
+								}
+								className="bg-[#171718] border-4 ml-[20px] cursor-pointer border-[#171718]"
+							/>
+							<Text ml="xl">
+								Click on image to upload a new image
+							</Text>
 						</div>
-					) : null}
-					<form
-						onSubmit={(e) => {
-							e.preventDefault();
-						}}
-					>
-						<SimpleGrid cols={2} breakpoints={[]}>
-							<TextInput
-								label="Email"
-								required
-								value={email}
-								type="email"
-								onChange={(e) => setEmail(e.target.value)}
-							/>
-							<TextInput
-								label="Display Name"
-								required
-								value={name}
-								onChange={(d) => setName(d.target.value)}
-							/>
-							<TextInput
-								label="Username"
-								required
-								value={username}
-								onChange={(d) => setUsername(d.target.value)}
-							/>
-							<ColorInput
-								value={color}
-								onChange={(e) => setColor(e)}
-								label="Banner Color"
-							/>
-						</SimpleGrid>
-						<Group mt="xl" position="center" className="w-full">
-							<TextInput
-								label="One Liner"
-								required
-								className="w-[90%]"
-								value={oneLiner}
-								onChange={(d) => setOneLiner(d.target.value)}
-							/>
-							<Button
-								variant="filled"
-								className="bg-[#4595d0] hover:bg-[#317fb9]"
-								onClick={() => {
-									updateProfile(
-										{
-											color,
-											username,
-											name,
-											email,
-											oneLiner,
-										},
-										readCookie("token")!
-									).then(() => {
+					</div>
+				) : null}
+				<form
+					onSubmit={(e) => {
+						e.preventDefault();
+					}}
+				>
+					<SimpleGrid cols={2} breakpoints={[]}>
+						<TextInput
+							label="Email"
+							required
+							value={email}
+							type="email"
+							onChange={(e) => setEmail(e.target.value)}
+						/>
+						<TextInput
+							label="Display Name"
+							required
+							value={name}
+							onChange={(d) => setName(d.target.value)}
+						/>
+						<TextInput
+							label="Username"
+							required
+							value={username}
+							onChange={(d) => setUsername(d.target.value)}
+						/>
+						<ColorInput
+							value={color}
+							onChange={(e) => setColor(e)}
+							label="Banner Color"
+						/>
+						<TextInput
+							label="One Liner"
+							value={oneLiner}
+							onChange={(d) => setOneLiner(d.target.value)}
+						/>
+						<MultiSelect
+							label="Interests"
+							data={interest.map((i) => ({
+								value: i.id,
+								label: i.name,
+								color: i.color,
+								icon: i.icon,
+							}))}
+							placeholder="Select Interests"
+							searchable
+							creatable
+							itemComponent={SelectItem}
+							getCreateLabel={(query) => `+ Create New`}
+							valueComponent={Value}
+							filter={(value, selected, item) =>
+								!selected &&
+								(item.label
+									?.toLowerCase()
+									.includes(value.toLowerCase().trim()) ||
+									item.description
+										.toLowerCase()
+										.includes(value.toLowerCase().trim()))
+							}
+							onCreate={(value) => {
+								setCreateNewInterestModalOpened((o) => !o);
+								return null;
+							}}
+							value={tags}
+							onChange={(e) => {
+								setTags(e);
+							}}
+						/>
+					</SimpleGrid>
+					<Group my="xl" position="center">
+						<Button
+							variant="filled"
+							className="bg-[#4595d0] hover:bg-[#317fb9]"
+							onClick={() => {
+								if (tags.length > 10)
+									return showNotification({
+										message:
+											"You can only select 10 interests",
+										color: "red",
+									});
+								updateProfile(
+									{
+										color,
+										username,
+										name,
+										email,
+										oneLiner,
+										tags: tags.map((t) =>
+											interest.find((i) => i.id === t)
+										),
+									},
+									readCookie("token")!
+								)
+									.then(() => {
 										showNotification({
 											message: "Profile Updated",
 											color: "green",
 										});
 										refetch();
+									})
+									.catch((err) => {
+										showNotification({
+											message: "Error Updating Profile",
+											color: "red",
+										});
 									});
-								}}
-							>
-								Save Changes
-							</Button>
-						</Group>
-					</form>
-				</Skeleton>
+							}}
+						>
+							Save Changes
+						</Button>
+					</Group>
+				</form>
 			</Container>
 			<Modal
 				opened={bannerImageUploadModalOpened}
@@ -398,6 +474,105 @@ export default function SettingsPage() {
 						Confirm
 					</Button>
 				</Group>
+			</Modal>
+			<Modal
+				opened={createNewInterestModalOpened}
+				onClose={() => setCreateNewInterestModalOpened((o) => !o)}
+				centered
+			>
+				<div className="flex flex-col items-center justify-center">
+					<Text>Preview</Text>
+					<Badge
+						styles={{
+							root: {
+								backgroundColor: newInterestFormState.isDirty(
+									"color"
+								)
+									? newInterestFormState.values.color
+									: undefined,
+								color:
+									theme.colorScheme === "dark"
+										? theme.white
+										: theme.black,
+							},
+						}}
+						leftSection={Icon ? <Icon /> : null}
+						style={{ textTransform: "none" }}
+						p="md"
+					>
+						{newInterestFormState.values.name || "Name"}
+					</Badge>
+				</div>
+				<form
+					onSubmit={newInterestFormState.onSubmit((d) => {
+						setCreateNewInterestLoading(true);
+						createInterest({
+							token: readCookie("token")!,
+							...d,
+						})
+							.then(() => {
+								setCreateNewInterestLoading(false);
+								setCreateNewInterestModalOpened(false);
+								fetchInterest()
+									.then((d) => setInterest(d.data))
+									.catch((err) => null);
+							})
+							.catch(() => {
+								setCreateNewInterestLoading(false);
+								showNotification({
+									message:
+										"An Error Occured While Creating Interest",
+									color: "red",
+								});
+							});
+					})}
+				>
+					<TextInput
+						label="Name"
+						placeholder="Web Development"
+						required
+						{...newInterestFormState.getInputProps("name")}
+					/>
+					<ColorInput
+						my="md"
+						label="Color"
+						required
+						{...newInterestFormState.getInputProps("color")}
+					/>
+					<SimpleGrid cols={4} my="md">
+						{Object.entries(icons).map(([key, Icon]) => (
+							<Card
+								key={key}
+								className={clsx(
+									"flex flex-col items-center justify-center cursor-pointer",
+									{
+										"border-2 border-green-500":
+											newInterestFormState.values.icon ===
+											key,
+									}
+								)}
+								onClick={() =>
+									newInterestFormState.setFieldValue(
+										"icon",
+										key
+									)
+								}
+							>
+								<Icon />
+							</Card>
+						))}
+					</SimpleGrid>
+					<Group position="center" my="lg">
+						<Button
+							variant="outline"
+							color="green"
+							loading={createNewInterestLoading}
+							type="submit"
+						>
+							Create
+						</Button>
+					</Group>
+				</form>
 			</Modal>
 		</>
 	);
