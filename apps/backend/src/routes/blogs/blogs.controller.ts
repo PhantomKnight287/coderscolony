@@ -69,7 +69,7 @@ export class BlogsController {
       skip: resultsToFetch > 5 ? resultsToFetch - 5 : undefined,
     });
     if (!blogs.length)
-      throw new HttpException('No User Found', HttpStatus.NOT_FOUND);
+      throw new HttpException('No Blogs Found', HttpStatus.NOT_FOUND);
     const res = { blogs: blogs };
     if (blogs.length > 5) {
       res['next'] = resultsToFetch + 5;
