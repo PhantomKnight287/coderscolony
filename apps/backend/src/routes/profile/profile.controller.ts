@@ -57,6 +57,14 @@ export class ProfileController {
         followers: true,
         following: true,
         oneLiner: true,
+        interests: {
+          select: {
+            color: true,
+            icon: true,
+            id: true,
+            name: true,
+          },
+        },
       },
     });
     if (!profile)
@@ -121,7 +129,7 @@ export class ProfileController {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const { color, email, name, oneLiner, username } = body;
+    const { color, email, name, oneLiner, username, tags } = body;
     await this.prisma.prisma.user.update({
       where: { id },
       data: {
@@ -130,6 +138,21 @@ export class ProfileController {
         name,
         oneLiner,
         username,
+        tags: {
+          connectOrCreate:
+            tags && tags.length > 0
+              ? tags.map((d) => ({
+                  where: {
+                    id: d.id,
+                  },
+                  create: {
+                    color: d.color,
+                    name: d.name,
+                    logo: d.icon,
+                  },
+                }))
+              : undefined,
+        },
       },
     });
     return 'ok';
@@ -169,7 +192,7 @@ export class ProfileController {
       throw new HttpException('View Already Added.', HttpStatus.CONFLICT);
     await this.prisma.prisma.user.update({
       where: {
-        id: userAccount.email,
+        id: userAccount.id,
       },
       data: {
         views: {
