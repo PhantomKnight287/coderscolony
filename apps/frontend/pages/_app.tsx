@@ -131,6 +131,11 @@ export default function App(props: AppProps) {
 														>
 															<Component
 																{...pageProps}
+																key={
+																	pageProps
+																		.router
+																		.asPath
+																}
 															/>
 														</motion.div>
 													</AnimatePresence>
