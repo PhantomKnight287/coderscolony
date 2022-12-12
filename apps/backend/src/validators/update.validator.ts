@@ -6,4 +6,12 @@ export const UpdateProfileValidator = z.object({
   email: z.string().email().optional(),
   oneLiner: z.string().optional(),
   name: z.string().optional(),
+  tags: z.array(
+    z.object({
+      color: z.string().optional(),
+      icon: z.string(),
+      id: z.string(),
+      name: z.string(),
+    }),
+  ),
 });
