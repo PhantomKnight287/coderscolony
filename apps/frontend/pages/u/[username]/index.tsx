@@ -1,6 +1,5 @@
 import { MetaTags } from "@components/meta";
 import { useHydrateUserContext } from "@hooks/hydrate/context";
-import { useSidebar } from "@hooks/sidebar";
 import {
 	Avatar,
 	Container,
@@ -8,6 +7,7 @@ import {
 	Image,
 	Skeleton,
 	useMantineColorScheme,
+	useMantineTheme,
 } from "@mantine/core";
 import clsx from "clsx";
 import { User } from "db";
@@ -25,9 +25,11 @@ import { fetchProfile } from "@services/profile-actions";
 import { readCookie } from "@helpers/cookies";
 import { useUser, useUserDispatch } from "@hooks/user";
 import { ProfileTabs } from "@components/profile/tabs";
-import { imageResolver } from "@helpers/profile-url";
+import { imageResolver, profileImageResolver } from "@helpers/profile-url";
 import useCollapsedSidebar from "@hooks/sidebar/use-collapsed-sidebar";
 import axios from "axios";
+import { icons } from "@components/select/value";
+import { Badge } from "@components/badge";
 
 const useStyles = createStyles((theme) => ({
 	image: {
@@ -75,9 +77,13 @@ const UsernamePage: NextPage<{
 				(query.username as string).toLocaleLowerCase()
 		) {
 			axios
-				.post(`/api/profile/${query.username}`)
+				.post(`/api/profile/${query.username}`, undefined, {
+					headers: {
+						authorization: `Bearer ${readCookie("token")}`,
+					},
+				})
 				.then((d) => d.data)
-				.then((data) => {
+				.then(() => {
 					setProfileStats((d) => ({ ...d, views: d.views + 1 }));
 				})
 				.catch((err) => null);
@@ -86,7 +92,7 @@ const UsernamePage: NextPage<{
 
 	useHydrateUserContext();
 
-	const setGlobalUser = useUserDispatch();
+	const theme = useMantineTheme();
 
 	const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -126,15 +132,10 @@ const UsernamePage: NextPage<{
 				) : null}
 				<div className="w-max h-max mt-[-5rem] flex items-center justify-center">
 					<Avatar
-						src={
-							user.profileImage
-								? user.profileImage.startsWith(
-										"https://avatar.dicebar"
-								  )
-									? user.profileImage
-									: `/images/${user.profileImage}`
-								: `https://avatars.dicebear.com/api/big-smile/${user.username}.svg`
-						}
+						src={profileImageResolver({
+							profileURL: user.profileImage!,
+							username: user.username!,
+						})}
 						size={160}
 						radius={80}
 						className="bg-[#171718] border-4 ml-[20px] border-[#171718]"
@@ -217,6 +218,21 @@ const UsernamePage: NextPage<{
 							</span>
 						</div>
 					</div>
+					<div className="flex flex-row flex-wrap pt-5">
+						{user.interests?.map((i) => (
+							<Badge
+								key={i.id}
+								icon={i.icon}
+								color={i.color}
+								p="md"
+								style={{
+									textTransform: "none",
+								}}
+							>
+								{i.name}
+							</Badge>
+						))}
+					</div>
 				</div>
 				<div className="mt-10">
 					{typeof window !== "undefined" ? <ProfileTabs /> : null}
@@ -237,7 +253,19 @@ export const getStaticPaths: GetStaticPaths = async () => {
 };
 
 export const getStaticProps: GetStaticProps<
-	Partial<User & { edit: boolean; followers: number; following: number }>
+	Partial<
+		User & {
+			edit: boolean;
+			followers: number;
+			following: number;
+			interests: {
+				color: string;
+				icon: string;
+				id: string;
+				name: string;
+			}[];
+		}
+	>
 > = async ({ params }) => {
 	const data = await fetch(
 		`${process.env.API_URL}/profile/${params!.username}`
