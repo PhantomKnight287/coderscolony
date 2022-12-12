@@ -95,7 +95,6 @@ const BlogPage: NextPage<{
 	useCollapsedSidebar();
 
 	useEffect(() => {
-		console.log(pageProps);
 		if (!isReady) return;
 		isBlogEditable(readCookie("token")!, query.slug as string)
 			.then((d) => d.data)
@@ -170,96 +169,94 @@ const BlogPage: NextPage<{
 							{numberWithCommas(likes)} likes
 						</Text>
 					</div>
-					{editable === true ? (
-						<div className="flex flex-row flex-nowrap">
+					<div className="flex flex-row flex-nowrap">
+						<ActionIcon
+							onClick={() => {
+								if (!id)
+									return showNotification({
+										message:
+											"You need to be logged in to like a blog",
+										color: "red",
+									});
+								if (liked === true) {
+									axios
+										.delete(
+											`/api/blog-action/${query.username}/${query.slug}/like`,
+											{
+												headers: {
+													authorization: `Bearer ${readCookie(
+														"token"
+													)}`,
+												},
+											}
+										)
+										.then((d) => {
+											setLiked(false);
+											setLikes(likes - 1);
+										})
+										.catch((err) => {
+											showNotification({
+												message:
+													err?.response?.data
+														?.message ||
+													"Something went wrong",
+												color: "red",
+											});
+										});
+								} else {
+									axios
+										.post(
+											`/api/blog-action/${query.username}/${query.slug}/like`,
+											{},
+											{
+												headers: {
+													authorization: `Bearer ${readCookie(
+														"token"
+													)}`,
+												},
+											}
+										)
+										.then((d) => {
+											setLiked(true);
+											setLikes(likes + 1);
+										})
+										.catch((err) => {
+											showNotification({
+												message:
+													err?.response?.data
+														?.message ||
+													"Something went wrong",
+												color: "red",
+											});
+										});
+								}
+							}}
+						>
+							<IconHeart
+								cursor={"pointer"}
+								size={22}
+								color={theme.colors.red[6]}
+								fill={
+									liked === true
+										? theme.colors.red[6]
+										: "none"
+								}
+							/>
+						</ActionIcon>
+						{editable === true ? (
 							<ActionIcon
 								onClick={() => {
-									if (!id)
-										return showNotification({
-											message:
-												"You need to be logged in to like a blog",
-											color: "red",
-										});
-									if (liked === true) {
-										axios
-											.delete(
-												`/api/blog-action/${query.username}/${query.slug}/like`,
-												{
-													headers: {
-														authorization: `Bearer ${readCookie(
-															"token"
-														)}`,
-													},
-												}
-											)
-											.then((d) => {
-												setLiked(false);
-												setLikes(likes - 1);
-											})
-											.catch((err) => {
-												showNotification({
-													message:
-														err?.response?.data
-															?.message ||
-														"Something went wrong",
-													color: "red",
-												});
-											});
-									} else {
-										axios
-											.post(
-												`/api/blog-action/${query.username}/${query.slug}/like`,
-												{},
-												{
-													headers: {
-														authorization: `Bearer ${readCookie(
-															"token"
-														)}`,
-													},
-												}
-											)
-											.then((d) => {
-												setLiked(true);
-												setLikes(likes + 1);
-											})
-											.catch((err) => {
-												showNotification({
-													message:
-														err?.response?.data
-															?.message ||
-														"Something went wrong",
-													color: "red",
-												});
-											});
-									}
+									push(`${asPath}/edit`);
 								}}
 							>
-								<IconHeart
+								<IconPencil
 									cursor={"pointer"}
 									size={22}
-									color={theme.colors.red[6]}
-									fill={
-										liked === true
-											? theme.colors.red[6]
-											: "none"
-									}
+									color={theme.colors.indigo[6]}
 								/>
 							</ActionIcon>
-							{editable === true ? (
-								<ActionIcon
-									onClick={() => {
-										push(`${asPath}/edit`);
-									}}
-								>
-									<IconPencil
-										cursor={"pointer"}
-										size={22}
-										color={theme.colors.indigo[6]}
-									/>
-								</ActionIcon>
-							) : null}
-						</div>
-					) : null}
+						) : null}
+					</div>
 				</div>
 				<Divider mt="sm" mb="md" />
 				{typeof window !== "undefined" ? (
