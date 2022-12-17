@@ -21,15 +21,14 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
 import styles from "@styles/username.module.scss";
-import { fetchProfile } from "@services/profile-actions";
 import { readCookie } from "@helpers/cookies";
-import { useUser, useUserDispatch } from "@hooks/user";
+import { useUser, } from "@hooks/user";
 import { ProfileTabs } from "@components/profile/tabs";
 import { imageResolver, profileImageResolver } from "@helpers/profile-url";
 import useCollapsedSidebar from "@hooks/sidebar/use-collapsed-sidebar";
 import axios from "axios";
-import { icons } from "@components/select/value";
 import { Badge } from "@components/badge";
+import ProfileMenu from "@components/menu/profile";
 
 const useStyles = createStyles((theme) => ({
 	image: {
@@ -68,6 +67,23 @@ const UsernamePage: NextPage<{
 			})
 			.catch((err) => {});
 	}, [isReady]);
+
+	async function fetchStats() {
+		if (!isReady) return;
+		axios
+			.get<{ views: number; followers: number; following: number }>(
+				`/api/stats/${query.username}`
+			)
+			.then((d) => d.data)
+			.then((data) => {
+				setProfileStats({
+					followers: data.followers,
+					following: data.following,
+					views: data.views,
+				});
+			})
+			.catch((err) => {});
+	}
 
 	useEffect(() => {
 		if (!isReady) return;
@@ -130,16 +146,35 @@ const UsernamePage: NextPage<{
 						) : null}
 					</div>
 				) : null}
-				<div className="w-max h-max mt-[-5rem] flex items-center justify-center">
-					<Avatar
-						src={profileImageResolver({
-							profileURL: user.profileImage!,
-							username: user.username!,
-						})}
-						size={160}
-						radius={80}
-						className="bg-[#171718] border-4 ml-[20px] border-[#171718]"
-					/>
+				<div className="flex flex-row flex-nowrap justify-between">
+					<div className="w-max h-max mt-[-5rem] flex items-center justify-center">
+						<Avatar
+							src={profileImageResolver({
+								profileURL: user.profileImage!,
+								username: user.username!,
+							})}
+							size={160}
+							radius={80}
+							className="bg-[#171718] border-4 ml-[20px] border-[#171718]"
+						/>
+					</div>
+					{isReady ? (
+						<div className="mt-[2rem] mr-5">
+							<ProfileMenu
+								styles={{
+									dropdown: {
+										top: "unset !important",
+										left: "unset !important	",
+									},
+								}}
+								shadow={"md"}
+								width={200}
+								withArrow
+								username={query.username as string}
+								refetchStats={fetchStats}
+							/>
+						</div>
+					) : null}
 				</div>
 				<div className="ml-[20px]">
 					<div className="flex items-center text-[16px] mt-5 font-[700] leading-[24px]">
