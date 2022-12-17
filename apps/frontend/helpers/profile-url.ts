@@ -15,5 +15,5 @@ export const profileImageResolver = ({
 };
 
 export const imageResolver = (url: string) => {
-	return `/images/${url}`;
+	return url.startsWith("/api/gen") ? url : `/images/${url}`;
 };
