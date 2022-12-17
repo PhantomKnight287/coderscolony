@@ -5,6 +5,18 @@ export const CreateNewSeries = z.object({
     required_error: 'Name of Series is Required',
     invalid_type_error: 'Name of Series must be string',
   }),
+  image: z.string({
+    required_error: 'Image of Series is Required',
+    invalid_type_error: 'Image of Series must be string',
+  }),
+  description: z.string({
+    required_error: 'Description of Series is Required',
+    invalid_type_error: 'Description of Series must be string',
+  }),
+  title: z.string({
+    required_error: 'Title of Series is Required',
+    invalid_type_error: 'Title of Series must be string',
+  }),
 });
 
 export const AddNewBlogInSeries = z.object({

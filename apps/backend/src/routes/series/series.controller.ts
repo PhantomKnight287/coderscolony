@@ -41,11 +41,14 @@ export class SeriesController {
     const userExist = await this.verify.verifyUser(id);
     if (userExist === false)
       throw new HttpException("User doesn't Exist", HttpStatus.NOT_FOUND);
-
+    const { description, image, name, title } = body;
     const series = await this.prisma.prisma.series.create({
       data: {
         author: { connect: { id } },
-        slug: `${slugify(body.name)}-${nanoid(10)}`,
+        slug: `${slugify(name)}-${nanoid(10)}`,
+        image,
+        title,
+        description,
       },
       select: {
         slug: true,
@@ -116,6 +119,9 @@ export class SeriesController {
             slug: true,
           },
         },
+        description: true,
+        image: true,
+        title: true,
       },
     });
     return seriesBlog;
@@ -123,7 +129,7 @@ export class SeriesController {
   @Get('')
   async getAllSeries(@Query('take') take: string) {
     const toFetch = Number.isNaN(parseInt(take)) ? 5 : parseInt(take);
-    const series = await this.prisma.prisma.series.findMany({
+    const _series = await this.prisma.prisma.series.findMany({
       where: {},
       take: toFetch,
       skip: toFetch > 5 ? toFetch - 5 : undefined,
@@ -146,14 +152,17 @@ export class SeriesController {
           },
         },
         blogs: true,
+        description: true,
+        image: true,
+        title: true,
       },
     });
-    const s = series.map((s) => ({ ...s, blogs: s.blogs.length }));
+    const series = _series.map((s) => ({ ...s, blogs: s.blogs.length }));
     if (series.length > 5)
       return {
-        s,
+        series,
         next: toFetch + 5,
       };
-    return { s };
+    return { series };
   }
 }
