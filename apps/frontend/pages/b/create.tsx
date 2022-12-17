@@ -46,23 +46,24 @@ function CreateBlog() {
 
 	async function createBlog() {
 		const { content, title, description } = values;
-		if (!file)
-			return showNotification({
-				message: "Please select a banner image for your blog.",
-				color: "red",
-			});
+		let path = null;
+
 		setLoading(true);
-		const link = await uploadSingleFile(file, readCookie("token")!)
-			.then((d) => d.data)
-			.catch((err) => null);
-		if (link === null) {
-			setLoading(false);
-			return showNotification({
-				message: "An error occured while uploading image.",
-				color: "red",
-			});
+		if (file) {
+			const link = await uploadSingleFile(file, readCookie("token")!)
+				.then((d) => d.data)
+				.catch((err) => null);
+			if (link === null) {
+				setLoading(false);
+				return showNotification({
+					message: "An error occured while uploading image.",
+					color: "red",
+				});
+			}
+			path = link.path;
+		} else {
+			path = null;
 		}
-		const { path } = link;
 		createBlogWithApi({
 			content,
 			title,
@@ -168,7 +169,7 @@ function CreateBlog() {
 						required
 						{...getInputProps("description")}
 					/>
-					<Label required>Banner Image</Label>
+					<Label required={false}>Banner Image</Label>
 					<SingleFileDropzone file={file} setFile={setFile} />
 					<Group position="center" mt="xl">
 						<Button
