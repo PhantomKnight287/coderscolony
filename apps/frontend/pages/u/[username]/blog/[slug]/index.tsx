@@ -114,7 +114,11 @@ const BlogPage: NextPage<{
 
 			<Container mb="xl">
 				<Image
-					src={imageResolver(pageProps.ogImage!)}
+					src={
+						pageProps.ogImage?.startsWith("/api/gen")
+							? pageProps.ogImage
+							: imageResolver(pageProps.ogImage!)
+					}
 					style={{
 						objectFit: "cover",
 						borderRadius: 0,
