@@ -96,7 +96,7 @@ export class CommentsController {
         id: true,
       },
     });
-
+    if (!blog) throw new HttpException('Blog not found', 404);
     const comments = await this.commentsService.getBlogComments(
       blog.id,
       Number.isNaN(parseInt(take)) ? '5' : take,
