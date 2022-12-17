@@ -20,7 +20,7 @@ export default function BlogsPage() {
 	const containerRef = useRef<HTMLDivElement>();
 	const { ref, entry } = useIntersection({
 		root: containerRef.current,
-		threshold: 1,
+		threshold: 0.2,
 	});
 	useHydrateUserContext();
 	const {
@@ -31,6 +31,7 @@ export default function BlogsPage() {
 		isFetching,
 		isFetchingNextPage,
 		status,
+		refetch,
 	} = useInfiniteQuery<{
 		blogs: Array<Blogs>;
 		next?: number;
@@ -42,9 +43,11 @@ export default function BlogsPage() {
 		if (opened === true) return setOpened(false);
 		return () => setOpened(true);
 	}, []);
-
 	useEffect(() => {
-		if (entry?.isIntersecting) fetchNextPage();
+		if (entry?.isIntersecting) {
+			if (hasNextPage) return void fetchNextPage();
+			else return void refetch();
+		}
 	}, [entry?.isIntersecting]);
 
 	return (
