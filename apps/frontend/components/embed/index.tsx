@@ -12,7 +12,8 @@ import {
 } from "@mantine/core";
 import axios, { CancelToken } from "axios";
 import clsx from "clsx";
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useState } from "react";
 import { MetaData } from "~types/metadata";
 
 function Embed(props: any) {
@@ -66,6 +67,10 @@ function Embed(props: any) {
 						"max-w-fit": !metaData.image,
 					})}
 					mt="sm"
+					component={Link}
+					href={props.href}
+					target="_blank"
+					rel="noreferrer noopener"
 				>
 					{metaData.image ? (
 						<Card.Section>
