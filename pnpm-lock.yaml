@@ -28,11 +28,9 @@ importers:
       '@types/morgan': ^1.9.3
       '@types/multer': ^1.4.7
       '@types/node': ^16.18.3
-      '@types/react': ^18.0.26
       '@types/supertest': ^2.0.12
       '@typescript-eslint/eslint-plugin': ^5.45.0
       '@typescript-eslint/parser': ^5.45.0
-      '@vercel/og': ^0.0.21
       base64-arraybuffer: ^1.0.2
       bcrypt: ^5.1.0
       cookie-parser: ^1.4.6
@@ -78,7 +76,6 @@ importers:
       '@nestjs/websockets': 9.2.1_4q5kozuneek2jh7gdynwjkbxs4
       '@supabase/supabase-js': 2.1.1
       '@types/cookie-parser': 1.4.3
-      '@vercel/og': 0.0.21
       base64-arraybuffer: 1.0.2
       bcrypt: 5.1.0
       cookie-parser: 1.4.6
@@ -112,7 +109,6 @@ importers:
       '@types/morgan': 1.9.3
       '@types/multer': 1.4.7
       '@types/node': 16.18.3
-      '@types/react': 18.0.26
       '@types/supertest': 2.0.12
       '@typescript-eslint/eslint-plugin': 5.45.0_czs5uoqkd3podpy6vgtsxfc7au
       '@typescript-eslint/parser': 5.45.0_hsf322ms6xhhd4b5ne6lb74y4a
@@ -2867,14 +2863,6 @@ packages:
 
   /@types/react/18.0.25:
     resolution: {integrity: sha512-xD6c0KDT4m7n9uD4ZHi02lzskaiqcBxf4zi+tXZY98a04wvc0hi/TcCPC2FOESZi51Nd7tlUeOJY8RofL799/g==}
-    dependencies:
-      '@types/prop-types': 15.7.5
-      '@types/scheduler': 0.16.2
-      csstype: 3.1.1
-    dev: true
-
-  /@types/react/18.0.26:
-    resolution: {integrity: sha512-hCR3PJQsAIXyxhTNSiDFY//LhnMZWpNNr5etoCqx/iUfGc5gXWtQR2Phl908jVR6uPXacojQWTg4qRpkxTuGug==}
     dependencies:
       '@types/prop-types': 15.7.5
       '@types/scheduler': 0.16.2
