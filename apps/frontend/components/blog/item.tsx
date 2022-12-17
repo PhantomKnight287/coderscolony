@@ -114,9 +114,18 @@ export default function BlogItem(props: Blogs) {
 						{props.description}
 					</Text>
 				</div>
-				<Skeleton visible={!imageLoaded} className="max-w-fit">
+				<Skeleton
+					visible={!imageLoaded}
+					className={clsx("max-w-fit", {
+						hidden: !props.ogImage,
+					})}
+				>
 					<Image
-						src={imageResolver(props.ogImage!)}
+						src={
+							props.ogImage?.startsWith("/api/gen")
+								? props.ogImage
+								: imageResolver(props.ogImage!)
+						}
 						className={clsx("max-w-[150px] max-h-[150px]")}
 						onLoad={() => setImageLoaded(true)}
 						alt="Banner Image"
