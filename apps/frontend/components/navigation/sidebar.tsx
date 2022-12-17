@@ -198,6 +198,37 @@ export function Sidebar() {
 							},
 						]}
 					/>
+					<NavbarLinksGroup
+						icon={IconPencil}
+						label="Series"
+						initiallyOpened={true}
+						links={[
+							{
+								id: "CREATE",
+								label: (
+									<UnstyledButton
+										color="blue"
+										className="flex flex-row items-center justify-center  hover:bg-[#233449] py-2 px-4 rounded-lg ml-2 min-w-[100px]"
+									>
+										Create
+									</UnstyledButton>
+								),
+								link: "/s/create",
+							},
+							{
+								id: "LIST",
+								label: (
+									<UnstyledButton
+										color="blue"
+										className="flex flex-row items-center justify-center  hover:bg-[#233449] py-2 px-4 rounded-lg ml-2 min-w-[100px]"
+									>
+										View All
+									</UnstyledButton>
+								),
+								link: "/s",
+							},
+						]}
+					/>
 				</Container>
 			</aside>
 			<Modal
