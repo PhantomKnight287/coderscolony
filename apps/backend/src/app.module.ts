@@ -32,6 +32,8 @@ import { APP_GUARD } from '@nestjs/core';
 import { BlogStatsController } from './routes/blog-stats/blog-stats.controller';
 import { BlogActionsController } from './routes/blog-actions/blog-actions.controller';
 import { InterestsController } from './routes/interests/interests.controller';
+import { FollowController } from './routes/follow/follow.controller';
+import { FollowService } from './services/follow/follow.service';
 
 @Module({
   imports: [
@@ -62,6 +64,7 @@ import { InterestsController } from './routes/interests/interests.controller';
     BlogStatsController,
     BlogActionsController,
     InterestsController,
+    FollowController,
   ],
   providers: [
     AppService,
@@ -78,6 +81,7 @@ import { InterestsController } from './routes/interests/interests.controller';
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
+    FollowService,
   ],
 })
 export class AppModule {}
