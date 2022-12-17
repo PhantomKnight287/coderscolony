@@ -167,13 +167,16 @@ model Tags {
 }
 
 model Series {
-  id        String   @id @unique @default(cuid())
-  author    User     @relation(fields: [userId], references: [id])
-  slug      String
-  userId    String
-  blogs     Blog[]
-  tags      Tags[]
-  createdAt DateTime @default(now())
+  id          String   @id @unique @default(cuid())
+  author      User     @relation(fields: [userId], references: [id])
+  description String?
+  slug        String
+  userId      String
+  title       String
+  image       String
+  blogs       Blog[]
+  tags        Tags[]
+  createdAt   DateTime @default(now())
 }
 
 model ProfileInterests {
