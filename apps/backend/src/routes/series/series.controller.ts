@@ -1,10 +1,12 @@
 import {
   Body,
   Controller,
+  Get,
   HttpException,
   HttpStatus,
   Param,
   Post,
+  Query,
 } from '@nestjs/common';
 import { nanoid } from 'nanoid';
 import { Token } from 'src/decorators/token/token.decorator';
@@ -117,5 +119,41 @@ export class SeriesController {
       },
     });
     return seriesBlog;
+  }
+  @Get('')
+  async getAllSeries(@Query('take') take: string) {
+    const toFetch = Number.isNaN(parseInt(take)) ? 5 : parseInt(take);
+    const series = await this.prisma.prisma.series.findMany({
+      where: {},
+      take: toFetch,
+      skip: toFetch > 5 ? toFetch - 5 : undefined,
+      select: {
+        author: {
+          select: {
+            username: true,
+            profileImage: true,
+            name: true,
+          },
+        },
+        createdAt: true,
+        id: true,
+        slug: true,
+        tags: {
+          select: {
+            color: true,
+            logo: true,
+            name: true,
+          },
+        },
+        blogs: true,
+      },
+    });
+    const s = series.map((s) => ({ ...s, blogs: s.blogs.length }));
+    if (series.length > 5)
+      return {
+        s,
+        next: toFetch + 5,
+      };
+    return { s };
   }
 }
