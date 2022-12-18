@@ -6,7 +6,7 @@ export const CreateBlogValidator = JOI.object({
   tags: JOI.array().items(JOI.string()),
   ogImage: JOI.string().optional().allow(null),
   description: JOI.string().required(),
-  seriesId: JOI.string().optional().allow(null,""),
+  seriesId: JOI.string().optional().allow(null, ''),
 });
 
 export const EditBlogValidator = z.object({

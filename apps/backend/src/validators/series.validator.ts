@@ -6,7 +6,8 @@ export const CreateNewSeries = z.object({
       required_error: 'Image of Series is Required',
       invalid_type_error: 'Image of Series must be string',
     })
-    .optional().nullable(),
+    .optional()
+    .nullable(),
   description: z.string({
     required_error: 'Description of Series is Required',
     invalid_type_error: 'Description of Series must be string',

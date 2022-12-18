@@ -73,7 +73,7 @@ function CreateBlog() {
 	const [seriesBannerImage, setSeriesBannerImage] = useState<File>();
 
 	async function createBlog() {
-		console.log(values)
+		console.log(values);
 		const { content, title, description, seriesId } = values;
 		let path = null;
 

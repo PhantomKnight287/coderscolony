@@ -10,15 +10,15 @@ export type Blogs = Partial<Blog> & {
 	readTime: string;
 	Series: {
 		blogs: {
-            id: string;
-            createdAt: Date;
-            slug: string;
-            title: string;
-            description: string;
-            author: {
-                username: string;
-            };
-        }[];
+			id: string;
+			createdAt: Date;
+			slug: string;
+			title: string;
+			description: string;
+			author: {
+				username: string;
+			};
+		}[];
 		id: string;
 		createdAt: Date;
 		slug: string;
