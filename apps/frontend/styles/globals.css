@@ -5,15 +5,16 @@
 
 body {
 	font-family: "Montserrat", sans-serif;
+	overflow: scroll !important;
 }
 
 .word-break {
 	word-break: break-word;
 }
 
-ul{
+ul {
 	list-style: circle !important;
 }
-ol{
+ol {
 	list-style: decimal !important;
 }

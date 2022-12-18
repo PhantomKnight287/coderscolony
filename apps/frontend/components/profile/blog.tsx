@@ -14,6 +14,8 @@ export function Blogs() {
 		const res = await fetch(
 			`/api/blogs/${query.username}?take=${pageParams || 5}`
 		);
+		if (res.status === 404) throw new Error("No Blogs Found");
+		if (res.ok === false) throw new Error("Error fetching blogs");
 		return res.json();
 	};
 	const {
@@ -36,7 +38,6 @@ export function Blogs() {
 		root: containerRef.current,
 		threshold: 1,
 	});
-
 	useEffect(() => {
 		if (entry?.isIntersecting) fetchNextPage();
 	}, [entry?.isIntersecting]);
@@ -44,7 +45,9 @@ export function Blogs() {
 	return status === "loading" ? (
 		<p>Loading...</p>
 	) : status === "error" ? (
-		<p>Error: {(error as Error).message}</p>
+		<div className="flex flex-col items-center justify-center my-5">
+			<p>{(error as Error).message}</p>
+		</div>
 	) : (
 		<div ref={containerRef as any}>
 			{data.pages.map((group, i) => (

@@ -119,11 +119,12 @@ export function BlogPost({
 							src={imageResolver(ogImage!)}
 							onLoad={() => setImageLoaded(true)}
 							height={180}
+							alt={title}
 						/>
 					</Skeleton>
 				</Card.Section>
 
-				<Text className={classes.title} weight={500}>
+				<Text className={classes.title} lineClamp={2} weight={500}>
 					{title}
 				</Text>
 

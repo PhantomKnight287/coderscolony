@@ -4,7 +4,7 @@ interface CreateBlogProps {
 	title: string;
 	content: string;
 	tags?: string[];
-	ogImage?: string;
+	ogImage?: string | null;
 	token: string;
 	description: string;
 }

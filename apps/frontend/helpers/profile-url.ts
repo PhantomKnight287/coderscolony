@@ -6,12 +6,14 @@ export const profileImageResolver = ({
 	username: string;
 }) => {
 	return profileURL
-		? profileURL.startsWith("https://avatar.dicebar")
+		? profileURL.startsWith("https://avatars.dicebear.com/api/big-smile")
+			? profileURL
+			: profileURL.startsWith("/api/gen")
 			? profileURL
 			: `/images/${profileURL}`
 		: `https://avatars.dicebear.com/api/big-smile/${username}.svg`;
 };
 
 export const imageResolver = (url: string) => {
-	return `/images/${url}`;
+	return url.startsWith("/api/gen") ? url : `/images/${url}`;
 };

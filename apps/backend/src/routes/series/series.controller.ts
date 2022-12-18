@@ -1,10 +1,12 @@
 import {
   Body,
   Controller,
+  Get,
   HttpException,
   HttpStatus,
   Param,
   Post,
+  Query,
 } from '@nestjs/common';
 import { nanoid } from 'nanoid';
 import { Token } from 'src/decorators/token/token.decorator';
@@ -39,11 +41,14 @@ export class SeriesController {
     const userExist = await this.verify.verifyUser(id);
     if (userExist === false)
       throw new HttpException("User doesn't Exist", HttpStatus.NOT_FOUND);
-
+    const { description, image, name, title } = body;
     const series = await this.prisma.prisma.series.create({
       data: {
         author: { connect: { id } },
-        slug: `${slugify(body.name)}-${nanoid(10)}`,
+        slug: `${slugify(name)}-${nanoid(10)}`,
+        image,
+        title,
+        description,
       },
       select: {
         slug: true,
@@ -114,8 +119,50 @@ export class SeriesController {
             slug: true,
           },
         },
+        description: true,
+        image: true,
+        title: true,
       },
     });
     return seriesBlog;
+  }
+  @Get('')
+  async getAllSeries(@Query('take') take: string) {
+    const toFetch = Number.isNaN(parseInt(take)) ? 5 : parseInt(take);
+    const _series = await this.prisma.prisma.series.findMany({
+      where: {},
+      take: toFetch,
+      skip: toFetch > 5 ? toFetch - 5 : undefined,
+      select: {
+        author: {
+          select: {
+            username: true,
+            profileImage: true,
+            name: true,
+          },
+        },
+        createdAt: true,
+        id: true,
+        slug: true,
+        tags: {
+          select: {
+            color: true,
+            logo: true,
+            name: true,
+          },
+        },
+        blogs: true,
+        description: true,
+        image: true,
+        title: true,
+      },
+    });
+    const series = _series.map((s) => ({ ...s, blogs: s.blogs.length }));
+    if (series.length > 5)
+      return {
+        series,
+        next: toFetch + 5,
+      };
+    return { series };
   }
 }

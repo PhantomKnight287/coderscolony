@@ -5,6 +5,7 @@ import { getMarkdownString } from "@helpers/showdown";
 import { useHydrateUserContext } from "@hooks/hydrate/context";
 import { useSidebar } from "@hooks/sidebar";
 import {
+	ActionIcon,
 	Avatar,
 	Button,
 	Container,
@@ -14,6 +15,7 @@ import {
 	Text,
 	Title,
 	useMantineColorScheme,
+	useMantineTheme,
 } from "@mantine/core";
 import { useHydrate } from "@tanstack/react-query";
 import axios from "axios";
@@ -32,21 +34,65 @@ import { monthNames } from "../../../../../constants/months";
 import { isBlogEditable } from "@services/editable";
 import { readCookie } from "@helpers/cookies";
 import { useRouter } from "next/router";
-import { IconPencil } from "@tabler/icons";
+import { IconHeart, IconPencil } from "@tabler/icons";
+import CommentsEditor from "@components/comments/editor";
+import { showNotification } from "@mantine/notifications";
+import useCollapsedSidebar from "@hooks/sidebar/use-collapsed-sidebar";
+import { outfit } from "@fonts/index";
+import { numberWithCommas } from "@helpers/number";
+import { useUser } from "@hooks/user";
+
+async function getBlogStats(
+	username: string,
+	slug: string,
+	token?: string | null
+) {
+	return await axios.get<{ likes: number; liked: boolean }>(
+		`/api/stats/blog/${username}/${slug}`,
+		{
+			headers: token
+				? {
+						authorization: `Bearer ${token}`,
+				  }
+				: {},
+		}
+	);
+}
 
 const BlogPage: NextPage<{
 	pageProps: InferGetStaticPropsType<typeof getStaticProps>;
 }> = ({ pageProps }) => {
 	const { colorScheme } = useMantineColorScheme();
-	const { opened, setOpened } = useSidebar();
 	const [editable, setEditable] = useState(false);
 	const { query, isReady, asPath, push } = useRouter();
-	useHydrateUserContext();
+	const theme = useMantineTheme();
+	const [likes, setLikes] = useState(0);
+	const [liked, setLiked] = useState(false);
+	const { id } = useUser();
 
 	useEffect(() => {
-		if (opened) return setOpened(false);
-		return () => setOpened(true);
-	}, [opened]);
+		if (!isReady) return;
+		getBlogStats(
+			query.username as string,
+			query.slug as string,
+			readCookie("token")
+		)
+			.then((d) => {
+				setLikes(d.data.likes);
+				setLiked(d.data.liked);
+			})
+			.catch((err) => {
+				return showNotification({
+					message:
+						err?.response?.data?.message || "Something went wrong",
+					color: "red",
+				});
+			});
+	}, []);
+
+	useHydrateUserContext();
+
+	useCollapsedSidebar();
 
 	useEffect(() => {
 		if (!isReady) return;
@@ -68,7 +114,11 @@ const BlogPage: NextPage<{
 
 			<Container mb="xl">
 				<Image
-					src={imageResolver(pageProps.ogImage!)}
+					src={
+						pageProps.ogImage?.startsWith("/api/gen")
+							? pageProps.ogImage
+							: imageResolver(pageProps.ogImage!)
+					}
 					style={{
 						objectFit: "cover",
 						borderRadius: 0,
@@ -112,25 +162,143 @@ const BlogPage: NextPage<{
 						</Text>
 					</div>
 				</Group>
-				<div className="flex flex-col items-center justify-center">
-					{editable === true ? (
-						<button
-							style={{
-								appearance: "none",
-							}}
+				<div className="flex flex-row-reverse flex-wrap">
+					<div className="ml-auto flex flex-row">
+						<Text color={"dimmed"}>{pageProps.readTime}</Text>
+						<Text
+							color={"dimmed"}
+							data-before="•"
+							className="before:content-[attr(data-before)] before:mx-[8px]"
+						>
+							{numberWithCommas(likes)} likes
+						</Text>
+					</div>
+					<div className="flex flex-row flex-nowrap">
+						<ActionIcon
 							onClick={() => {
-								push(`${asPath}/edit`);
+								if (!id)
+									return showNotification({
+										message:
+											"You need to be logged in to like a blog",
+										color: "red",
+									});
+								if (liked === true) {
+									axios
+										.delete(
+											`/api/blog-action/${query.username}/${query.slug}/like`,
+											{
+												headers: {
+													authorization: `Bearer ${readCookie(
+														"token"
+													)}`,
+												},
+											}
+										)
+										.then((d) => {
+											setLiked(false);
+											setLikes(likes - 1);
+										})
+										.catch((err) => {
+											showNotification({
+												message:
+													err?.response?.data
+														?.message ||
+													"Something went wrong",
+												color: "red",
+											});
+										});
+								} else {
+									axios
+										.post(
+											`/api/blog-action/${query.username}/${query.slug}/like`,
+											{},
+											{
+												headers: {
+													authorization: `Bearer ${readCookie(
+														"token"
+													)}`,
+												},
+											}
+										)
+										.then((d) => {
+											setLiked(true);
+											setLikes(likes + 1);
+										})
+										.catch((err) => {
+											showNotification({
+												message:
+													err?.response?.data
+														?.message ||
+													"Something went wrong",
+												color: "red",
+											});
+										});
+								}
 							}}
 						>
-							<IconPencil cursor={"pointer"} size={20} />
-						</button>
-					) : null}
+							<IconHeart
+								cursor={"pointer"}
+								size={22}
+								color={theme.colors.red[6]}
+								fill={
+									liked === true
+										? theme.colors.red[6]
+										: "none"
+								}
+							/>
+						</ActionIcon>
+						{editable === true ? (
+							<ActionIcon
+								onClick={() => {
+									push(`${asPath}/edit`);
+								}}
+							>
+								<IconPencil
+									cursor={"pointer"}
+									size={22}
+									color={theme.colors.indigo[6]}
+								/>
+							</ActionIcon>
+						) : null}
+					</div>
 				</div>
-				<Divider mt="lg" mb="md" />
+				<Divider mt="sm" mb="md" />
 				{typeof window !== "undefined" ? (
 					<Renderer
 						// eslint-disable-next-line react/no-children-prop
 						children={getMarkdownString(pageProps.content!)}
+					/>
+				) : null}
+				{isReady ? (
+					<CommentsEditor
+						postSlug={query.slug as string}
+						routeSlug={query.username as string}
+						sendComment={(d) => {
+							axios
+								.post(
+									`/api/comments/blog/${query.username}/${query.slug}`,
+									{ content: d },
+									{
+										headers: {
+											authorization: `Bearer ${readCookie(
+												"token"
+											)}`,
+										},
+									}
+								)
+								.then(() => null)
+
+								.catch((err) => {
+									return showNotification({
+										message:
+											err?.response?.data?.message ||
+											"Something went wrong",
+										color: "red",
+									});
+								});
+						}}
+						username={pageProps.author.username}
+						isBlog
 					/>
 				) : null}
 			</Container>

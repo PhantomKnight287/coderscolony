@@ -1,3 +1,4 @@
+import CommentsEditor from "@components/comments/editor";
 import { Container } from "@components/container";
 import { MetaTags } from "@components/meta";
 import { PostAuthor } from "@components/post/forum-post/post-author";
@@ -6,11 +7,11 @@ import { PostToolBar } from "@components/toolbar/per-post";
 import { readCookie } from "@helpers/cookies";
 import { getMarkdownString } from "@helpers/showdown";
 import { useHydrateUserContext } from "@hooks/hydrate/context";
-import { useSidebar } from "@hooks/sidebar";
 import useCollapsedSidebar from "@hooks/sidebar/use-collapsed-sidebar";
+import { useUser } from "@hooks/user";
 import { Loader, LoadingOverlay } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
-import { likePost } from "@services/post-actions";
+import { dislikePost, likePost } from "@services/post-actions";
 import { IconArrowLeft } from "@tabler/icons";
 import axios from "axios";
 import {
@@ -21,16 +22,51 @@ import {
 } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useState } from "react";
-import { SinglePost } from "../../../../../types/forum-post";
+import { useEffect, useState } from "react";
+import { SinglePost } from "~types/forum-post";
+
+async function fetchStats(
+	postSlug: string,
+	forumSlug: string,
+	token?: string | null
+) {
+	return await axios.get<{ likes: number; liked: boolean }>(
+		`/api/stats/${forumSlug}/${postSlug}`,
+		{
+			headers: token
+				? {
+						Authorization: `Bearer ${token}`,
+				  }
+				: undefined,
+		}
+	);
+}
 
 const PostsPage: NextPage<{
 	pageProps: InferGetStaticPropsType<typeof getStaticProps>;
 }> = ({ pageProps }) => {
 	useHydrateUserContext();
-	const { query } = useRouter();
+	const { query, isReady } = useRouter();
 	const [likes, setLikes] = useState(pageProps.post.likedBy || 0);
+	const [liked, setLiked] = useState(pageProps.post.liked || false);
+	const { id } = useUser();
 	useCollapsedSidebar();
+
+	useEffect(() => {
+		if (!isReady) return;
+		fetchStats(
+			query.slug as string,
+			query.name as string,
+			readCookie("token")
+		)
+			.then((d) => d.data)
+			.then((d) => {
+				setLikes(d.likes);
+				setLiked(d.liked);
+			})
+			.catch((e) => null);
+	}, [isReady]);
+
 	return (
 		<Container>
 			<MetaTags
@@ -79,28 +115,78 @@ const PostsPage: NextPage<{
 				linkToCopy={
 					typeof window != "undefined" ? window.location.href : ""
 				}
-				likePost={async () =>
-					await likePost({
-						postSlug: query.slug! as string,
-						slug: query.name! as string,
-						token: readCookie("token")!,
-					}).then((data) => {
-						if (data == null) {
-							if (pageProps.post.liked === false) {
-								return setLikes((o) => o + 1);
-							} else if (pageProps.post.liked === true) {
-								return setLikes((o) => o - 1);
-							}
-						}
+				likePost={async () => {
+					if (!id)
 						return showNotification({
-							message: data,
+							message: "You need to be logged in to like a post",
 							color: "red",
 						});
-					})
-				}
+					if (liked === false) {
+						return await likePost({
+							postSlug: query.slug! as string,
+							slug: query.name! as string,
+							token: readCookie("token")!,
+						}).then((data) => {
+							if (data == null) {
+								setLiked(true);
+								return setLikes((o) => o + 1);
+							}
+							return showNotification({
+								message: data,
+								color: "red",
+							});
+						});
+					} else {
+						return await dislikePost({
+							postSlug: query.slug! as string,
+							slug: query.name! as string,
+							token: readCookie("token")!,
+						}).then((data) => {
+							if (data == null) {
+								setLiked(false);
+								return setLikes((o) => o - 1);
+							}
+							return showNotification({
+								message: data,
+								color: "red",
+							});
+						});
+					}
+				}}
 				likes={likes}
-				liked={pageProps.post.liked}
+				liked={liked}
 			/>
+			{isReady === false ? (
+				<LoadingOverlay visible={true} />
+			) : (
+				<CommentsEditor
+					postSlug={query.slug as string}
+					routeSlug={query.name as string}
+					sendComment={(s: string) => {
+						axios
+							.post(
+								`/api/comments/${query.name}/${query.slug}`,
+								{ content: s },
+								{
+									headers: {
+										authorization: `Bearer ${readCookie(
+											"token"
+										)}`,
+									},
+								}
+							)
+							.catch((err) => {
+								return showNotification({
+									message:
+										err?.response?.data?.message ||
+										"Something went wrong",
+									color: "red",
+								});
+							});
+					}}
+					username={pageProps.post.author.username}
+				/>
+			)}
 		</Container>
 	);
 };

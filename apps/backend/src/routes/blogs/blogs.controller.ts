@@ -15,6 +15,8 @@ import { PrismaService } from 'src/services/prisma/prisma.service';
 import { DecodedJWT } from 'src/types/jwt';
 import * as nanoid from 'nanoid';
 import { CreateBlogValidator } from 'src/validators/blog.validator';
+import { readingTime } from 'src/modules/reading-time';
+import { URLSearchParams } from 'node:url';
 
 interface CreateBlog {
   title: string;
@@ -68,7 +70,7 @@ export class BlogsController {
       skip: resultsToFetch > 5 ? resultsToFetch - 5 : undefined,
     });
     if (!blogs.length)
-      throw new HttpException('No User Found', HttpStatus.NOT_FOUND);
+      throw new HttpException('No Blogs Found', HttpStatus.NOT_FOUND);
     const res = { blogs: blogs };
     if (blogs.length > 5) {
       res['next'] = resultsToFetch + 5;
@@ -80,7 +82,6 @@ export class BlogsController {
     @Token({ validate: true }) { id }: DecodedJWT,
     @Body() body: CreateBlog,
   ) {
-    console.log(body);
     try {
       await CreateBlogValidator.validateAsync(body);
     } catch (e) {
@@ -111,6 +112,12 @@ export class BlogsController {
     });
     if (oldBlog)
       throw new HttpException('Slug is Already Taken', HttpStatus.CONFLICT);
+    const params = new URLSearchParams({
+      title,
+      username: user.username,
+      name: user.name,
+      profileImage: user.profileImage,
+    });
     const blog = await this.prisma.prisma.blog.create({
       data: {
         content,
@@ -121,7 +128,7 @@ export class BlogsController {
             id: user.id,
           },
         },
-        ogImage,
+        ogImage: ogImage || `/api/gen/blog-og-image?${params.toString()}`,
         tags: {
           connect: tags.map((tag) => ({ id: tag })),
         },
@@ -218,6 +225,6 @@ export class BlogsController {
       },
     });
     if (!blog) throw new HttpException('No Blog Found', HttpStatus.NOT_FOUND);
-    return blog;
+    return { ...blog, readTime: readingTime(blog.content).text };
   }
 }

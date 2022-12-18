@@ -1,6 +1,5 @@
 import { MetaTags } from "@components/meta";
 import { useHydrateUserContext } from "@hooks/hydrate/context";
-import { useSidebar } from "@hooks/sidebar";
 import {
 	Avatar,
 	Container,
@@ -8,6 +7,7 @@ import {
 	Image,
 	Skeleton,
 	useMantineColorScheme,
+	useMantineTheme,
 } from "@mantine/core";
 import clsx from "clsx";
 import { User } from "db";
@@ -21,11 +21,14 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
 import styles from "@styles/username.module.scss";
-import { fetchProfile } from "@services/profile-actions";
 import { readCookie } from "@helpers/cookies";
-import { useUserDispatch } from "@hooks/user";
+import { useUser, } from "@hooks/user";
 import { ProfileTabs } from "@components/profile/tabs";
-import { imageResolver } from "@helpers/profile-url";
+import { imageResolver, profileImageResolver } from "@helpers/profile-url";
+import useCollapsedSidebar from "@hooks/sidebar/use-collapsed-sidebar";
+import axios from "axios";
+import { Badge } from "@components/badge";
+import ProfileMenu from "@components/menu/profile";
 
 const useStyles = createStyles((theme) => ({
 	image: {
@@ -38,32 +41,75 @@ const UsernamePage: NextPage<{
 	pageProps: InferGetStaticPropsType<typeof getStaticProps>;
 }> = ({ pageProps }) => {
 	const { colorScheme } = useMantineColorScheme();
-	const { opened, setOpened } = useSidebar();
-	const { asPath } = useRouter();
+	const { asPath, isReady, query } = useRouter();
 	const [user, setUser] = useState(pageProps);
 	const { classes } = useStyles();
+	const [profileStats, setProfileStats] = useState({
+		views: 0,
+		following: 0,
+		followers: 0,
+	});
+	const { username } = useUser();
+	useCollapsedSidebar();
 	useEffect(() => {
-		if (opened === true) {
-			return setOpened(false);
+		if (!isReady) return;
+		axios
+			.get<{ views: number; followers: number; following: number }>(
+				`/api/stats/${query.username}`
+			)
+			.then((d) => d.data)
+			.then((data) => {
+				setProfileStats({
+					followers: data.followers,
+					following: data.following,
+					views: data.views,
+				});
+			})
+			.catch((err) => {});
+	}, [isReady]);
+
+	async function fetchStats() {
+		if (!isReady) return;
+		axios
+			.get<{ views: number; followers: number; following: number }>(
+				`/api/stats/${query.username}`
+			)
+			.then((d) => d.data)
+			.then((data) => {
+				setProfileStats({
+					followers: data.followers,
+					following: data.following,
+					views: data.views,
+				});
+			})
+			.catch((err) => {});
+	}
+
+	useEffect(() => {
+		if (!isReady) return;
+		if (
+			username &&
+			username.toLocaleLowerCase() !==
+				(query.username as string).toLocaleLowerCase()
+		) {
+			axios
+				.post(`/api/profile/${query.username}`, undefined, {
+					headers: {
+						authorization: `Bearer ${readCookie("token")}`,
+					},
+				})
+				.then((d) => d.data)
+				.then(() => {
+					setProfileStats((d) => ({ ...d, views: d.views + 1 }));
+				})
+				.catch((err) => null);
 		}
-		return () => setOpened(true);
-	}, [opened]);
+	}, [isReady, username]);
 
 	useHydrateUserContext();
 
-	const setGlobalUser = useUserDispatch();
-	async function fetchProfileAndUpdateState() {
-		const data = await fetchProfile(
-			pageProps.username!,
-			readCookie("token")
-		);
-		if (data.error === false) {
-			delete data.error;
-			setUser(data);
-			setGlobalUser({ payload: data, type: "SetUser" });
-		}
-	}
-	const ref = useRef<HTMLFormElement>();
+	const theme = useMantineTheme();
+
 	const [imageLoaded, setImageLoaded] = useState(false);
 
 	return (
@@ -76,7 +122,10 @@ const UsernamePage: NextPage<{
 				{user.bannerColor || user.bannerImage ? (
 					<div className="flex flex-col items-center justify-center">
 						{user.bannerImage ? (
-							<Skeleton visible={!imageLoaded} className="w-full min-h-[300px] max-h-[300px]" >
+							<Skeleton
+								visible={!imageLoaded}
+								className="w-full min-h-[300px] max-h-[300px]"
+							>
 								<Image
 									classNames={{
 										image: classes.image,
@@ -97,21 +146,35 @@ const UsernamePage: NextPage<{
 						) : null}
 					</div>
 				) : null}
-				<div className="w-max h-max mt-[-5rem] flex items-center justify-center">
-					<Avatar
-						src={
-							user.profileImage
-								? user.profileImage.startsWith(
-										"https://avatar.dicebar"
-								  )
-									? user.profileImage
-									: `/images/${user.profileImage}`
-								: `https://avatars.dicebear.com/api/big-smile/${user.username}.svg`
-						}
-						size={160}
-						radius={80}
-						className="bg-[#171718] border-4 ml-[20px] border-[#171718]"
-					/>
+				<div className="flex flex-row flex-nowrap justify-between">
+					<div className="w-max h-max mt-[-5rem] flex items-center justify-center">
+						<Avatar
+							src={profileImageResolver({
+								profileURL: user.profileImage!,
+								username: user.username!,
+							})}
+							size={160}
+							radius={80}
+							className="bg-[#171718] border-4 ml-[20px] border-[#171718]"
+						/>
+					</div>
+					{isReady ? (
+						<div className="mt-[2rem] mr-5">
+							<ProfileMenu
+								styles={{
+									dropdown: {
+										top: "unset !important",
+										left: "unset !important	",
+									},
+								}}
+								shadow={"md"}
+								width={200}
+								withArrow
+								username={query.username as string}
+								refetchStats={fetchStats}
+							/>
+						</div>
+					) : null}
 				</div>
 				<div className="ml-[20px]">
 					<div className="flex items-center text-[16px] mt-5 font-[700] leading-[24px]">
@@ -149,21 +212,28 @@ const UsernamePage: NextPage<{
 					) : null}
 					<div className="ml-3 mt-5 flex items-center">
 						<div className="flex-wrap items-center flex gap-[8px]">
-							<Link href={`${asPath}/followers`}>
-								<span
-									className={clsx(
-										"text-[13px] leading-[18px] hover:underline",
-										{
-											"text-gray-300":
-												colorScheme === "dark",
-											"text-[#666666]":
-												colorScheme === "light",
-										}
-									)}
+							<span
+								className={clsx("text-[13px] leading-[18px]", {
+									"text-gray-300": colorScheme === "dark",
+									"text-[#666666]": colorScheme === "light",
+								})}
+							>
+								{profileStats.views} Views
+							</span>
+							<span
+								className={clsx("text-[13px] leading-[18px]", {
+									"text-gray-300": colorScheme === "dark",
+									"text-[#666666]": colorScheme === "light",
+									[styles.following]: true,
+								})}
+							>
+								<Link
+									href={`${asPath}/followers`}
+									className="hover:underline"
 								>
-									{user.followers} Followers
-								</span>
-							</Link>
+									{profileStats.followers} Followers
+								</Link>
+							</span>
 							<span
 								className={clsx(
 									`text-[13px] leading-[18px] ${styles.following}`,
@@ -178,10 +248,25 @@ const UsernamePage: NextPage<{
 									href={`${asPath}/following`}
 									className="hover:underline "
 								>
-									{user.following} Following
+									{profileStats.following} Following
 								</Link>
 							</span>
 						</div>
+					</div>
+					<div className="flex flex-row flex-wrap pt-5">
+						{user.interests?.map((i) => (
+							<Badge
+								key={i.id}
+								icon={i.icon}
+								color={i.color}
+								p="md"
+								style={{
+									textTransform: "none",
+								}}
+							>
+								{i.name}
+							</Badge>
+						))}
 					</div>
 				</div>
 				<div className="mt-10">
@@ -203,7 +288,19 @@ export const getStaticPaths: GetStaticPaths = async () => {
 };
 
 export const getStaticProps: GetStaticProps<
-	Partial<User & { edit: boolean; followers: number; following: number }>
+	Partial<
+		User & {
+			edit: boolean;
+			followers: number;
+			following: number;
+			interests: {
+				color: string;
+				icon: string;
+				id: string;
+				name: string;
+			}[];
+		}
+	>
 > = async ({ params }) => {
 	const data = await fetch(
 		`${process.env.API_URL}/profile/${params!.username}`

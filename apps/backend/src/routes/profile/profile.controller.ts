@@ -57,6 +57,14 @@ export class ProfileController {
         followers: true,
         following: true,
         oneLiner: true,
+        interests: {
+          select: {
+            color: true,
+            icon: true,
+            id: true,
+            name: true,
+          },
+        },
       },
     });
     if (!profile)
@@ -121,7 +129,7 @@ export class ProfileController {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const { color, email, name, oneLiner, username } = body;
+    const { color, email, name, oneLiner, username, tags } = body;
     await this.prisma.prisma.user.update({
       where: { id },
       data: {
@@ -130,8 +138,68 @@ export class ProfileController {
         name,
         oneLiner,
         username,
+        tags: {
+          connectOrCreate:
+            tags && tags.length > 0
+              ? tags.map((d) => ({
+                  where: {
+                    id: d.id,
+                  },
+                  create: {
+                    color: d.color,
+                    name: d.name,
+                    logo: d.icon,
+                  },
+                }))
+              : undefined,
+        },
       },
     });
     return 'ok';
+  }
+  @Post(':username')
+  async updateProfileViews(
+    @Param('username') username: string,
+    @Token({ validate: true }) { id },
+  ) {
+    const user = await this.prisma.prisma.user.findFirst({
+      where: {
+        id,
+      },
+    });
+    if (!user)
+      throw new HttpException(
+        'No user account associated with provided authentication credentials.',
+        HttpStatus.NOT_FOUND,
+      );
+    const userAccount = await this.prisma.prisma.user.findFirst({
+      where: {
+        username: {
+          equals: username,
+          mode: 'insensitive',
+        },
+      },
+    });
+    if (!userAccount)
+      throw new HttpException('No User Account Found', HttpStatus.NOT_FOUND);
+    if (user.id === userAccount.id)
+      throw new HttpException(
+        "You can't add view on your own profile.",
+        HttpStatus.FORBIDDEN,
+      );
+    const isViewAlreadyAdded = userAccount.views.includes(user.id);
+    if (isViewAlreadyAdded)
+      throw new HttpException('View Already Added.', HttpStatus.CONFLICT);
+    await this.prisma.prisma.user.update({
+      where: {
+        id: userAccount.id,
+      },
+      data: {
+        views: {
+          push: user.id,
+        },
+      },
+    });
+    return { viewed: true };
   }
 }

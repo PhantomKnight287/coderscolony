@@ -1,7 +1,9 @@
 import { Controller, Get } from '@nestjs/common';
+import { SkipThrottle } from '@nestjs/throttler';
 import { PrismaService } from 'src/services/prisma/prisma.service';
 
 @Controller('static')
+@SkipThrottle(true)
 export class StaticController {
   constructor(protected prisma: PrismaService) {}
   @Get('profiles')

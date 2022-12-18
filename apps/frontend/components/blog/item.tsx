@@ -16,6 +16,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import updateLocale from "dayjs/plugin/updateLocale";
 import clsx from "clsx";
 import { useRouter } from "next/router";
+import { outfit } from "@fonts/index";
 
 dayjs.extend(relativeTime);
 dayjs.extend(updateLocale);
@@ -60,9 +61,9 @@ export default function BlogItem(props: Blogs) {
 			withBorder
 			p="lg"
 			className={clsx(`my-4 cursor-pointer`)}
-			onClick={() =>
-				push(`/u/${props.author.username}/blog/${props.slug}`)
-			}
+			onClick={() => {
+				push(`/u/${props.author.username}/blog/${props.slug}`);
+			}}
 		>
 			<Group
 				position="left"
@@ -96,12 +97,10 @@ export default function BlogItem(props: Blogs) {
 			<div className="flex flex-row mt-[12px]">
 				<div className="flex flex-col flex-1">
 					<h1
-						className={clsx(
-							"text-2xl font-bold font-['Inter'] pb-[8px]",
-							{
-								"text-white": colorScheme === "dark",
-							}
-						)}
+						className={clsx("text-2xl font-bold pb-[8px]", {
+							"text-white": colorScheme === "dark",
+							[outfit.className]: true,
+						})}
 					>
 						{props.title}
 					</h1>
@@ -115,11 +114,21 @@ export default function BlogItem(props: Blogs) {
 						{props.description}
 					</Text>
 				</div>
-				<Skeleton visible={!imageLoaded} className="max-w-fit">
+				<Skeleton
+					visible={!imageLoaded}
+					className={clsx("max-w-fit", {
+						hidden: !props.ogImage,
+					})}
+				>
 					<Image
-						src={imageResolver(props.ogImage!)}
+						src={
+							props.ogImage?.startsWith("/api/gen")
+								? props.ogImage
+								: imageResolver(props.ogImage!)
+						}
 						className={clsx("max-w-[150px] max-h-[150px]")}
 						onLoad={() => setImageLoaded(true)}
+						alt="Banner Image"
 					/>
 				</Skeleton>
 			</div>

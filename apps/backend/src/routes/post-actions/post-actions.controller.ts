@@ -23,18 +23,9 @@ export class PostActionsController {
   ) {
     slug = slugify(slug);
     postSlug = slugify(postSlug);
-    const user = await this.prisma.prisma.forumMember.findFirst({
+    const user = await this.prisma.prisma.user.findFirst({
       where: {
-        user: {
-          id,
-        },
-        forum: {
-          urlSlug: slug,
-        },
-      },
-      select: {
-        forum: true,
-        user: true,
+        id,
       },
     });
     if (!user)
@@ -52,7 +43,7 @@ export class PostActionsController {
         'No post found with provided slug',
         HttpStatus.NOT_FOUND,
       );
-    const isPostAlreadyLiked = post.likedBy.includes(user.user.id);
+    const isPostAlreadyLiked = post.likedBy.includes(user.id);
     if (isPostAlreadyLiked === true)
       throw new HttpException(
         "You've already liked this post.",
@@ -64,7 +55,7 @@ export class PostActionsController {
       },
       data: {
         likedBy: {
-          push: user.user.id,
+          push: user.id,
         },
       },
     });

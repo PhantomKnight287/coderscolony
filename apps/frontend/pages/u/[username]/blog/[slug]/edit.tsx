@@ -52,12 +52,11 @@ function EditBlog() {
 	useHydrateUserContext();
 	useEffect(() => {
 		if (isLoading || !data) return;
-		formState.resetDirty({
-			content: data.content,
-			description: data.description,
-			ogImage: data.ogImage,
-			title: data.title,
-		});
+		formState.setFieldValue("content", data.content);
+		formState.setFieldValue("description", data.description);
+		formState.setFieldValue("ogImage", data.ogImage);
+		formState.setFieldValue("title", data.title);
+		formState.resetDirty();
 	}, [isLoading]);
 
 	function updateBlog(values: typeof formState.values) {
