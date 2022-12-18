@@ -10,36 +10,26 @@ A platform where developers meeet each other to create awesome things.
 
 </p>
 
-  
+![Nextjs](https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
+![Nestjs](https://img.shields.io/badge/nestjs-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white)
+![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)
+![Postgresql](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-181818?style=for-the-badge&logo=supabase&logoColor=white)
+![Typescript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+
 
 ## Features
 
-- Forums(WIP)
-- Customized Profiles
-- 1-1 Chat
-- Blog Posts
-- Markdown Support for Blog posts and POsts in forums
+- Forums
+- Blogs
+
+... more on the way
 
 
-### Forums
+## Directory Setup
+This is a monorepo containing code of frontend,backend and app at one place. 
 
-A place to talk about a specific topic. for example: flutter,react native etc.
-
-They will have a specific route at `/f/<slug>` where slug is unique and is provided by admin when creating the forum
-
-More routes like `/f/<slug>/settings`, `/f/<slug>/<post>/<id>` etc.
-will be come under this directory.
-
-the `slug` is unique for forums.
-
-A forum can have `n` admins,moderators,members and posts.
-
-### Customized Profiles
-
-All user profiles will be available at `/@<username>` and more routes will code under this directory for various tasks.
-
-
-> more on these features later.
 
 
 ## How to setup this monorepo?
@@ -73,7 +63,7 @@ Now run `pnpm dev`, This will run the dev server and you'll be able to access th
 
 ## Commit Convention
 
-Please make sure to follow the commit convention. The commit must start with the scope. For example: `[frontend]`,`[backend]`,`[db]`, followed by a sensible commit message in `present` tense. 
+Please make sure to follow the commit convention. The commit must start with the scope. For example: `[frontend]`,`[backend]`,`[db]`,`[app]`,`[misc]`,`[info]`, followed by a sensible commit message in `present` tense. 
 
 > **Warning**
 > Please Don't commit all files in 1 commit. Please make separate commit for each file.
