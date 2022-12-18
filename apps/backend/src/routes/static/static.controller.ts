@@ -35,4 +35,12 @@ export class StaticController {
       },
     });
   }
+  @Get('series')
+  async generateStaticSeries() {
+    return await this.prisma.prisma.series.findMany({
+      select: {
+        slug: true,
+      },
+    });
+  }
 }
