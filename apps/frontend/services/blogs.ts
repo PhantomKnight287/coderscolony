@@ -7,9 +7,11 @@ interface CreateBlogProps {
 	ogImage?: string | null;
 	token: string;
 	description: string;
+	seriesId?: string | null;
 }
 export async function createBlog(props: CreateBlogProps) {
-	const { content, title, token, ogImage, tags, description } = props;
+	const { content, title, token, ogImage, tags, description, seriesId } =
+		props;
 
 	return axios.post<{ slug: string }>(
 		"/api/blogs/create",
@@ -19,6 +21,7 @@ export async function createBlog(props: CreateBlogProps) {
 			ogImage,
 			tags: tags || [],
 			description,
+			seriesId,
 		},
 		{
 			headers: {
