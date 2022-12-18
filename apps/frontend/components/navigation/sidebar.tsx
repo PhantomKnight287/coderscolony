@@ -198,7 +198,8 @@ export function Sidebar() {
 							},
 						]}
 					/>
-					{/* <NavbarLinksGroup
+
+					<NavbarLinksGroup
 						icon={IconPencil}
 						label="Series"
 						initiallyOpened={true}
@@ -228,7 +229,7 @@ export function Sidebar() {
 								link: "/s",
 							},
 						]}
-					/> */}
+					/>
 				</Container>
 			</aside>
 			<Modal
