@@ -13,4 +13,16 @@ export class VerifyUserService {
     if (!user) return false;
     return true;
   }
+  async verifyUserByUsername(username: string) {
+    const user = await this.prisma.prisma.user.findFirst({
+      where: {
+        username: {
+          equals: username,
+          mode: 'insensitive',
+        },
+      },
+    });
+    if (!user) return false;
+    return true;
+  }
 }
