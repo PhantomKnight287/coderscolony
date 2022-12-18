@@ -21,7 +21,11 @@ export default async function handler(req: NextRequest) {
 	const title = query.get("title");
 	const username = query.get("username");
 	const name = query.get("name");
-	const profileImage = query.get("profileImage");
+	const profileImage =
+		query.get("profileImage") ||
+		`https://avatars.dicebear.com/api/big-smile/${username}.svg`;
+	const type = query.get("type") || "blog";
+
 	return new ImageResponse(
 		(
 			<div
@@ -96,7 +100,9 @@ export default async function handler(req: NextRequest) {
 								</div>
 							</div>
 						</div>
-						<div>Blog</div>
+						<div>
+							{type.charAt(0).toUpperCase() + type.slice(1)}
+						</div>
 					</button>
 					<div
 						style={{
@@ -115,7 +121,11 @@ export default async function handler(req: NextRequest) {
 							}}
 						>
 							<img
-								src={profileImage ? profileImage : ""}
+								src={
+									profileImage.startsWith("assets/")
+										? `${process.env.STORAGE_BUCKET_URL}/${profileImage}`
+										: profileImage
+								}
 								alt="Image"
 								style={{
 									// margin: "0 30px",
