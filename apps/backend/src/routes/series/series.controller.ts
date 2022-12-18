@@ -18,6 +18,7 @@ import {
   AddNewBlogInSeries,
   CreateNewSeries,
 } from 'src/validators/series.validator';
+import { URLSearchParams } from 'url';
 import { z } from 'zod';
 
 @Controller('series')
@@ -41,17 +42,26 @@ export class SeriesController {
     const userExist = await this.verify.verifyUser(id);
     if (userExist === false)
       throw new HttpException("User doesn't Exist", HttpStatus.NOT_FOUND);
-    const { description, image, name, title } = body;
+    const user = await this.prisma.prisma.user.findFirst({ where: { id } });
+    const { description, image, title } = body;
+    const params = new URLSearchParams({
+      title,
+      username: user.username,
+      name: user.name,
+      profileImage: user.profileImage,
+      type: 'Series',
+    });
     const series = await this.prisma.prisma.series.create({
       data: {
         author: { connect: { id } },
-        slug: `${slugify(name)}-${nanoid(10)}`,
-        image,
+        slug: `${slugify(title)}-${nanoid(10)}`,
+        image: image || `/api/gen/image?${params.toString()}}`,
         title,
         description,
       },
       select: {
         slug: true,
+        id: true,
       },
     });
     return series;
@@ -136,25 +146,36 @@ export class SeriesController {
       select: {
         author: {
           select: {
-            username: true,
             profileImage: true,
+            username: true,
             name: true,
           },
         },
         createdAt: true,
-        id: true,
-        slug: true,
-        tags: {
+        description: true,
+        blogs: {
           select: {
-            color: true,
-            logo: true,
-            name: true,
+            createdAt: true,
+            description: true,
+            slug: true,
+            title: true,
+            id: true,
+            author: {
+              select: {
+                name: true,
+                profileImage: true,
+                username: true,
+              },
+            },
+            ogImage: true,
           },
         },
-        blogs: true,
-        description: true,
         image: true,
+        slug: true,
         title: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
       },
     });
     const series = _series.map((s) => ({ ...s, blogs: s.blogs.length }));
@@ -164,5 +185,71 @@ export class SeriesController {
         next: toFetch + 5,
       };
     return { series };
+  }
+  @Get('user/:username')
+  async getSeriesByUser(@Param('username') username: string) {
+    const isValidUser = await this.verify.verifyUserByUsername(username);
+    if (!isValidUser)
+      throw new HttpException("User doesn't exist", HttpStatus.NOT_FOUND);
+    const series = await this.prisma.prisma.series.findMany({
+      where: {
+        author: {
+          username: {
+            equals: username,
+            mode: 'insensitive',
+          },
+        },
+      },
+      select: {
+        id: true,
+        title: true,
+      },
+    });
+    return series;
+  }
+  @Get(':slug')
+  async getSeriesBySlug(@Param('slug') slug: string) {
+    const series = await this.prisma.prisma.series.findFirst({
+      where: {
+        slug: {
+          equals: slugify(slug),
+          mode: 'insensitive',
+        },
+      },
+      select: {
+        author: {
+          select: {
+            profileImage: true,
+            username: true,
+            name: true,
+          },
+        },
+        createdAt: true,
+        description: true,
+        blogs: {
+          select: {
+            createdAt: true,
+            description: true,
+            slug: true,
+            title: true,
+            id: true,
+            author: {
+              select: {
+                name: true,
+                profileImage: true,
+                username: true,
+              },
+            },
+            ogImage: true,
+          },
+        },
+        image: true,
+        slug: true,
+        title: true,
+      },
+    });
+    if (!series)
+      throw new HttpException('Series not found', HttpStatus.NOT_FOUND);
+    return series;
   }
 }

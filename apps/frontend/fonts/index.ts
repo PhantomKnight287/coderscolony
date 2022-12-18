@@ -12,6 +12,6 @@ export const spaceGrotest = Space_Grotesk({
 
 export const outfit = Outfit({
 	variable: "--font-outfit",
-	weight: ["400"],
+	weight: ["400", "700"],
 	subsets: ["latin"],
 });

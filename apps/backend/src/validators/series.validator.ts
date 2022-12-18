@@ -1,14 +1,13 @@
 import { z } from 'zod';
 
 export const CreateNewSeries = z.object({
-  name: z.string({
-    required_error: 'Name of Series is Required',
-    invalid_type_error: 'Name of Series must be string',
-  }),
-  image: z.string({
-    required_error: 'Image of Series is Required',
-    invalid_type_error: 'Image of Series must be string',
-  }),
+  image: z
+    .string({
+      required_error: 'Image of Series is Required',
+      invalid_type_error: 'Image of Series must be string',
+    })
+    .optional()
+    .nullable(),
   description: z.string({
     required_error: 'Description of Series is Required',
     invalid_type_error: 'Description of Series must be string',

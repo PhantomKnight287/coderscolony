@@ -24,6 +24,7 @@ interface CreateBlog {
   tags: string[];
   ogImage: string;
   description: string;
+  seriesId?: string | null;
 }
 
 @Controller('blogs')
@@ -90,7 +91,7 @@ export class BlogsController {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const { content, ogImage, tags, title, description } = body;
+    const { content, ogImage, tags, title, description, seriesId } = body;
     const user = await this.prisma.prisma.user.findFirst({
       where: {
         id,
@@ -128,11 +129,18 @@ export class BlogsController {
             id: user.id,
           },
         },
-        ogImage: ogImage || `/api/gen/blog-og-image?${params.toString()}`,
+        ogImage: ogImage || `/api/gen/image?${params.toString()}`,
         tags: {
           connect: tags.map((tag) => ({ id: tag })),
         },
         description,
+        Series: seriesId
+          ? {
+              connect: {
+                id: seriesId,
+              },
+            }
+          : undefined,
       },
       select: {
         slug: true,
@@ -222,6 +230,28 @@ export class BlogsController {
         ogImage: true,
         tags: true,
         title: true,
+        Series: {
+          select: {
+            slug: true,
+            createdAt: true,
+            blogs: {
+              select: {
+                slug: true,
+                title: true,
+                createdAt: true,
+                description: true,
+                id: true,
+                author: {
+                  select: {
+                    username: true,
+                  },
+                },
+              },
+            },
+            id: true,
+            title: true,
+          },
+        },
       },
     });
     if (!blog) throw new HttpException('No Blog Found', HttpStatus.NOT_FOUND);

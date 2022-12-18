@@ -10,6 +10,7 @@ import {
 	Button,
 	Group,
 	Modal,
+	Select,
 	TextInput,
 	useMantineColorScheme,
 } from "@mantine/core";
@@ -24,15 +25,17 @@ import { useRouter } from "next/router";
 import { useUser } from "@hooks/user";
 import { Editor } from "@components/editor";
 import { Container } from "@components/container";
+import { createSeries, fetchSeriesByUsername } from "@services/series.service";
+import useCollapsedSidebar from "@hooks/sidebar/use-collapsed-sidebar";
 
 function CreateBlog() {
-	const { setOpened, opened } = useSidebar();
 	const { getInputProps, values, onSubmit, isDirty, setFieldValue } = useForm(
 		{
 			initialValues: {
 				content: "",
 				title: "",
 				description: "",
+				seriesId: "",
 			},
 		}
 	);
@@ -42,10 +45,36 @@ function CreateBlog() {
 	const { colorScheme } = useMantineColorScheme();
 	const { push } = useRouter();
 	const { username } = useUser();
+	const [optionPrompt, setOptionPrompt] = useState(false);
+	const [createSeriesPrompt, setCreateSeriesPrompt] = useState(false);
+	const [series, setSeries] = useState<{ id: string; title: string }[]>([]);
+
+	useEffect(() => {
+		fetchSeriesByUsername(username)
+			.then((d) => d.data)
+			.then((d) => {
+				setSeries(d);
+			})
+			.catch(() => {
+				showNotification({
+					message: "An error occured while fetching series.",
+					color: "red",
+				});
+			});
+	}, []);
+
 	useHydrateUserContext();
+	const seriesFormState = useForm({
+		initialValues: {
+			title: "",
+			description: "",
+		},
+	});
+	const [seriesBannerImage, setSeriesBannerImage] = useState<File>();
 
 	async function createBlog() {
-		const { content, title, description } = values;
+		console.log(values);
+		const { content, title, description, seriesId } = values;
 		let path = null;
 
 		setLoading(true);
@@ -70,6 +99,7 @@ function CreateBlog() {
 			ogImage: path,
 			token: readCookie("token")!,
 			description,
+			seriesId,
 		})
 			.then((d) => d.data)
 			.then((d) => {
@@ -87,13 +117,7 @@ function CreateBlog() {
 				setLoading(false);
 			});
 	}
-
-	useEffect(() => {
-		if (opened === true) {
-			return setOpened(false);
-		}
-		return () => setOpened(true);
-	}, [opened]);
+	useCollapsedSidebar();
 
 	return (
 		<>
@@ -167,16 +191,155 @@ function CreateBlog() {
 						mb="md"
 						label="Description"
 						required
+						placeholder="A description for your blog."
 						{...getInputProps("description")}
 					/>
+					<Select
+						data={series.map((d) => ({
+							value: d.id,
+							label: d.title,
+						}))}
+						mt="md"
+						mb="md"
+						label="Series"
+						placeholder="Series"
+						allowDeselect
+						{...getInputProps("seriesId")}
+					/>
+
 					<Label required={false}>Banner Image</Label>
 					<SingleFileDropzone file={file} setFile={setFile} />
-					<Group position="center" mt="xl">
+					<Group mt="xl">
+						<Button
+							variant="outline"
+							color="green"
+							onClick={() => {
+								setOptionPrompt(true);
+							}}
+							loading={loading}
+							fullWidth
+						>
+							Add Blog to Series
+						</Button>
 						<Button
 							variant="outline"
 							color="blue"
 							type="submit"
 							loading={loading}
+							fullWidth
+						>
+							Create
+						</Button>
+					</Group>
+				</form>
+			</Modal>
+			<Modal
+				centered
+				title="Add Blog to Series"
+				onClose={() => setOptionPrompt(false)}
+				opened={optionPrompt}
+			>
+				<Group mt="xl">
+					<Button
+						variant="outline"
+						color="green"
+						onClick={() => {
+							setOptionPrompt(false);
+							setCreateSeriesPrompt(true);
+						}}
+						loading={loading}
+						fullWidth
+					>
+						Create New Series
+					</Button>
+					<Button
+						variant="outline"
+						color="blue"
+						onClick={() => {
+							setOptionPrompt(false);
+							// setAddToSeries(true)
+						}}
+						loading={loading}
+						fullWidth
+					>
+						Add to Existing Series
+					</Button>
+				</Group>
+			</Modal>
+			<Modal
+				centered
+				title="Create New Series"
+				onClose={() => setCreateSeriesPrompt(false)}
+				opened={createSeriesPrompt}
+			>
+				<form
+					onSubmit={seriesFormState.onSubmit(async (d) => {
+						let path = null;
+						if (seriesBannerImage) {
+							const data = await uploadSingleFile(
+								seriesBannerImage,
+								readCookie("token")!
+							).catch(() => null);
+							if (data === null) {
+								return showNotification({
+									message: "Failed to upload image",
+									color: "red",
+								});
+							}
+							path = data.data.path;
+						}
+						const res = await createSeries({
+							title: d.title,
+							description: d.description,
+							image: path,
+							token: readCookie("token")!,
+						}).catch(() => null);
+						if (res === null) {
+							return showNotification({
+								message: "Failed to create series",
+								color: "red",
+							});
+						}
+						const { id } = res.data;
+						showNotification({
+							message: "Series created successfully",
+							color: "green",
+						});
+						fetchSeriesByUsername(username)
+							.then((d) => d.data)
+							.then(setSeries);
+						setFieldValue("seriesId", id);
+						setCreateSeriesPrompt(false);
+					})}
+				>
+					<TextInput
+						mt="md"
+						mb="md"
+						label="Series Title"
+						required
+						placeholder="A title for your series."
+						{...seriesFormState.getInputProps("title")}
+					/>
+					<TextInput
+						mt="md"
+						mb="md"
+						label="Series Description"
+						required
+						placeholder="A description for your series."
+						{...seriesFormState.getInputProps("description")}
+					/>
+					<Label required={false}>Series Banner Image</Label>
+					<SingleFileDropzone
+						file={seriesBannerImage}
+						setFile={setSeriesBannerImage}
+					/>
+					<Group mt="xl">
+						<Button
+							variant="outline"
+							color="blue"
+							type="submit"
+							loading={loading}
+							fullWidth
 						>
 							Create
 						</Button>

@@ -22,7 +22,7 @@ import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
 import styles from "@styles/username.module.scss";
 import { readCookie } from "@helpers/cookies";
-import { useUser, } from "@hooks/user";
+import { useUser } from "@hooks/user";
 import { ProfileTabs } from "@components/profile/tabs";
 import { imageResolver, profileImageResolver } from "@helpers/profile-url";
 import useCollapsedSidebar from "@hooks/sidebar/use-collapsed-sidebar";

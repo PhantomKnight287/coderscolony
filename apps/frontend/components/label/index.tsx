@@ -10,7 +10,6 @@ const Label: FC<
 			<Text
 				size={14}
 				sx={{
-					fontWeight: "lighter",
 					marginTop: 12,
 					marginBottom: 3,
 					display: "inline",

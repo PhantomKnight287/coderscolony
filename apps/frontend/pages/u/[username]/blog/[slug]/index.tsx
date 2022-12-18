@@ -41,6 +41,7 @@ import useCollapsedSidebar from "@hooks/sidebar/use-collapsed-sidebar";
 import { outfit } from "@fonts/index";
 import { numberWithCommas } from "@helpers/number";
 import { useUser } from "@hooks/user";
+import SeriesBanner from "@components/series/page/banner";
 
 async function getBlogStats(
 	username: string,
@@ -170,7 +171,10 @@ const BlogPage: NextPage<{
 							data-before="•"
 							className="before:content-[attr(data-before)] before:mx-[8px]"
 						>
-							{numberWithCommas(likes)} likes
+							{new Intl.NumberFormat(undefined, {
+								style: "decimal",
+							}).format(likes)}{" "}
+							likes
 						</Text>
 					</div>
 					<div className="flex flex-row flex-nowrap">
@@ -263,6 +267,12 @@ const BlogPage: NextPage<{
 					</div>
 				</div>
 				<Divider mt="sm" mb="md" />
+				{pageProps.Series ? (
+					<>
+						<SeriesBanner {...pageProps.Series} />
+						<Divider mt="sm" mb="md" />
+					</>
+				) : null}
 				{typeof window !== "undefined" ? (
 					<Renderer
 						// eslint-disable-next-line react/no-children-prop
