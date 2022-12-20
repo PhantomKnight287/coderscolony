@@ -46,14 +46,51 @@ export class StatsController {
           },
         },
       },
+      select: {
+        author: {
+          select: {
+            id: true,
+          },
+        },
+        likedBy: true,
+      },
     });
+    let menuConfig = undefined;
+    if (jwt)
+      if (forumPost.author.id === jwt.id)
+        menuConfig = {
+          author: true,
+          moderator: false,
+          admin: false,
+        };
+      else {
+        const user = await this.prisma.prisma.forumMember.findFirst({
+          where: {
+            user: {
+              id: jwt.id,
+            },
+          },
+          select: {
+            role: true,
+            id: true,
+          },
+        });
+        if (user) {
+          menuConfig = {
+            author: user.id === forumPost.author.id,
+            moderator: user.role === 'MODERATOR',
+            admin: user.role === 'ADMIN',
+          };
+        }
+      }
+
     if (!forumPost)
       throw new HttpException('Post not found', HttpStatus.NOT_FOUND);
     const likes = forumPost.likedBy.length;
     const liked =
       jwt !== undefined ? forumPost.likedBy.includes(jwt.id) : false;
 
-    return { likes, liked };
+    return { likes, liked, menuConfig };
   }
   @Get('blog/:username/:blogSlug')
   async getBlogStats(
@@ -87,12 +124,19 @@ export class StatsController {
       },
       select: {
         likes: true,
+        author: {
+          select: {
+            id: true,
+          },
+        },
       },
     });
     if (!blog) throw new HttpException('Blog not found', HttpStatus.NOT_FOUND);
     const likes = blog.likes.length;
     const liked = jwt !== undefined ? blog.likes.includes(jwt.id) : false;
-    return { likes, liked };
+    const deleteable = jwt !== undefined ? blog.author.id === jwt.id : false;
+
+    return { likes, liked, deleteable };
   }
   @Get(':username')
   async getProfileStats(@Param('username') username: string) {
