@@ -13,7 +13,10 @@ import clsx from "clsx";
 import remarkGemoji from "remark-gemoji";
 import Embed from "@components/embed";
 
-export const Renderer: FC<{ children: string }> = ({ children }) => {
+export const Renderer: FC<{ children: string; classes?: string }> = ({
+	children,
+	classes,
+}) => {
 	const { colorScheme } = useMantineColorScheme();
 	const components:
 		| Partial<
@@ -145,7 +148,7 @@ export const Renderer: FC<{ children: string }> = ({ children }) => {
 				components={components}
 				skipHtml={false}
 				rehypePlugins={[rehypeRaw]}
-				className={styles.renderer}
+				className={clsx(styles.renderer, classes)}
 			>
 				{children}
 			</ReactMarkdown>
