@@ -14,6 +14,7 @@ import {
 	Image,
 	Text,
 	Title,
+	Tooltip,
 	useMantineColorScheme,
 	useMantineTheme,
 } from "@mantine/core";
@@ -34,7 +35,7 @@ import { monthNames } from "../../../../../constants/months";
 import { isBlogEditable } from "@services/editable";
 import { readCookie } from "@helpers/cookies";
 import { useRouter } from "next/router";
-import { IconHeart, IconPencil } from "@tabler/icons";
+import { IconHeart, IconPencil, IconTrash } from "@tabler/icons";
 import CommentsEditor from "@components/comments/editor";
 import { showNotification } from "@mantine/notifications";
 import useCollapsedSidebar from "@hooks/sidebar/use-collapsed-sidebar";
@@ -48,16 +49,17 @@ async function getBlogStats(
 	slug: string,
 	token?: string | null
 ) {
-	return await axios.get<{ likes: number; liked: boolean }>(
-		`/api/stats/blog/${username}/${slug}`,
-		{
-			headers: token
-				? {
-						authorization: `Bearer ${token}`,
-				  }
-				: {},
-		}
-	);
+	return await axios.get<{
+		likes: number;
+		liked: boolean;
+		deleteable: boolean;
+	}>(`/api/stats/blog/${username}/${slug}`, {
+		headers: token
+			? {
+					authorization: `Bearer ${token}`,
+			  }
+			: {},
+	});
 }
 
 const BlogPage: NextPage<{
@@ -65,11 +67,12 @@ const BlogPage: NextPage<{
 }> = ({ pageProps }) => {
 	const { colorScheme } = useMantineColorScheme();
 	const [editable, setEditable] = useState(false);
-	const { query, isReady, asPath, push } = useRouter();
+	const { query, isReady, asPath, push, replace } = useRouter();
 	const theme = useMantineTheme();
 	const [likes, setLikes] = useState(0);
 	const [liked, setLiked] = useState(false);
 	const { id } = useUser();
+	const [deleteable, setDeleteable] = useState(false);
 
 	useEffect(() => {
 		if (!isReady) return;
@@ -81,6 +84,7 @@ const BlogPage: NextPage<{
 			.then((d) => {
 				setLikes(d.data.likes);
 				setLiked(d.data.liked);
+				setDeleteable(d.data.deleteable);
 			})
 			.catch((err) => {
 				return showNotification({
@@ -89,7 +93,7 @@ const BlogPage: NextPage<{
 					color: "red",
 				});
 			});
-	}, []);
+	}, [isReady]);
 
 	useHydrateUserContext();
 
@@ -178,91 +182,138 @@ const BlogPage: NextPage<{
 						</Text>
 					</div>
 					<div className="flex flex-row flex-nowrap">
-						<ActionIcon
-							onClick={() => {
-								if (!id)
-									return showNotification({
-										message:
-											"You need to be logged in to like a blog",
-										color: "red",
-									});
-								if (liked === true) {
-									axios
-										.delete(
-											`/api/blog-action/${query.username}/${query.slug}/like`,
-											{
-												headers: {
-													authorization: `Bearer ${readCookie(
-														"token"
-													)}`,
-												},
-											}
-										)
-										.then((d) => {
-											setLiked(false);
-											setLikes(likes - 1);
-										})
-										.catch((err) => {
-											showNotification({
-												message:
-													err?.response?.data
-														?.message ||
-													"Something went wrong",
-												color: "red",
-											});
-										});
-								} else {
-									axios
-										.post(
-											`/api/blog-action/${query.username}/${query.slug}/like`,
-											{},
-											{
-												headers: {
-													authorization: `Bearer ${readCookie(
-														"token"
-													)}`,
-												},
-											}
-										)
-										.then((d) => {
-											setLiked(true);
-											setLikes(likes + 1);
-										})
-										.catch((err) => {
-											showNotification({
-												message:
-													err?.response?.data
-														?.message ||
-													"Something went wrong",
-												color: "red",
-											});
-										});
-								}
-							}}
-						>
-							<IconHeart
-								cursor={"pointer"}
-								size={22}
-								color={theme.colors.red[6]}
-								fill={
-									liked === true
-										? theme.colors.red[6]
-										: "none"
-								}
-							/>
-						</ActionIcon>
-						{editable === true ? (
+						<Tooltip label={liked === true ? "Unlike" : "Like"}>
 							<ActionIcon
 								onClick={() => {
-									push(`${asPath}/edit`);
+									if (!id)
+										return showNotification({
+											message:
+												"You need to be logged in to like a blog",
+											color: "red",
+										});
+									if (liked === true) {
+										axios
+											.delete(
+												`/api/blog-action/${query.username}/${query.slug}/like`,
+												{
+													headers: {
+														authorization: `Bearer ${readCookie(
+															"token"
+														)}`,
+													},
+												}
+											)
+											.then((d) => {
+												setLiked(false);
+												setLikes(likes - 1);
+											})
+											.catch((err) => {
+												showNotification({
+													message:
+														err?.response?.data
+															?.message ||
+														"Something went wrong",
+													color: "red",
+												});
+											});
+									} else {
+										axios
+											.post(
+												`/api/blog-action/${query.username}/${query.slug}/like`,
+												{},
+												{
+													headers: {
+														authorization: `Bearer ${readCookie(
+															"token"
+														)}`,
+													},
+												}
+											)
+											.then((d) => {
+												setLiked(true);
+												setLikes(likes + 1);
+											})
+											.catch((err) => {
+												showNotification({
+													message:
+														err?.response?.data
+															?.message ||
+														"Something went wrong",
+													color: "red",
+												});
+											});
+									}
 								}}
 							>
-								<IconPencil
+								<IconHeart
 									cursor={"pointer"}
 									size={22}
-									color={theme.colors.indigo[6]}
+									color={theme.colors.red[6]}
+									fill={
+										liked === true
+											? theme.colors.red[6]
+											: "none"
+									}
 								/>
 							</ActionIcon>
+						</Tooltip>
+
+						{editable === true ? (
+							<Tooltip label="Edit">
+								<ActionIcon
+									onClick={() => {
+										push(`${asPath}/edit`);
+									}}
+								>
+									<IconPencil
+										cursor={"pointer"}
+										size={22}
+										color={theme.colors.indigo[6]}
+									/>
+								</ActionIcon>
+							</Tooltip>
+						) : null}
+						{deleteable === true ? (
+							<Tooltip label="Delete">
+								<ActionIcon
+									onClick={() => {
+										axios
+											.delete(
+												`/api/blogs/${query.username}/blog/${query.slug}`,
+												{
+													headers: {
+														authorization: `Bearer ${readCookie(
+															"token"
+														)}`,
+													},
+												}
+											)
+											.then((d) => {
+												showNotification({
+													message:
+														"Blog deleted successfully",
+													color: "green",
+												});
+												replace("/b");
+											})
+											.catch((err) => {
+												showNotification({
+													message:
+														err?.response?.data
+															?.message ||
+														"Something went wrong",
+													color: "red",
+												});
+											});
+									}}
+								>
+									<IconTrash
+										cursor={"pointer"}
+										size={22}
+										color={theme.colors.red[8]}
+									/>
+								</ActionIcon>
+							</Tooltip>
 						) : null}
 					</div>
 				</div>
