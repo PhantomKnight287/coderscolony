@@ -214,12 +214,12 @@ function CreateBlog() {
 							variant="outline"
 							color="green"
 							onClick={() => {
-								setOptionPrompt(true);
+								setCreateSeriesPrompt(true);
 							}}
 							loading={loading}
 							fullWidth
 						>
-							Add Blog to Series
+							Create New Series
 						</Button>
 						<Button
 							variant="outline"
@@ -235,7 +235,7 @@ function CreateBlog() {
 			</Modal>
 			<Modal
 				centered
-				title="Add Blog to Series"
+				title="Create New Series"
 				onClose={() => setOptionPrompt(false)}
 				opened={optionPrompt}
 			>
