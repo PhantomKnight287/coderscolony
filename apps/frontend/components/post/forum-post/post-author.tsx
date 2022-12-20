@@ -114,6 +114,7 @@ export function PostAuthor(
 						<Menu.Dropdown>
 							<Menu.Item
 								color="red"
+								onClick={props.deletePost}
 								icon={<IconTrash size={14} />}
 							>
 								Delete This Post
