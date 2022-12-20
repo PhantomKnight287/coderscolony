@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpException,
   HttpStatus,
@@ -12,7 +13,7 @@ import { Token } from 'src/decorators/token/token.decorator';
 import { slugify } from 'src/helpers/slugify';
 import { PrismaService } from 'src/services/prisma/prisma.service';
 import { DecodedJWT } from 'src/types/jwt';
-import { CreatePostValidator } from 'src/validators/forums-post.controller';
+import { CreatePostValidator } from 'src/validators/forums-post.validator';
 
 type CreateNewPostBody = {
   content: string;
@@ -125,5 +126,56 @@ export class ForumsPostController {
     res['post']['likedBy'] = likedBy;
 
     return res;
+  }
+  @Delete(':slug/:post')
+  async deletePost(
+    @Param('slug') forumSlug: string,
+    @Param('post') postSlug: string,
+    @Token({ validate: true }) { id }: DecodedJWT,
+  ) {
+    forumSlug = slugify(forumSlug);
+    postSlug = slugify(postSlug);
+    const member = await this.prisma.prisma.forumMember.findFirst({
+      where: {
+        user: {
+          id,
+        },
+      },
+    });
+    if (!member)
+      throw new HttpException(
+        'You are not a member of this forum',
+        HttpStatus.UNAUTHORIZED,
+      );
+    const post = await this.prisma.prisma.posts.findFirst({
+      where: {
+        slug: postSlug,
+        Forums: {
+          urlSlug: forumSlug,
+        },
+      },
+    });
+    if (!post)
+      throw new HttpException(
+        'No Post Found With Provided Slug',
+        HttpStatus.NOT_FOUND,
+      );
+    if (
+      post.userId !== id &&
+      member.role !== 'ADMIN' &&
+      member.role !== 'MODERATOR'
+    )
+      throw new HttpException(
+        'You are not allowed to delete this post',
+        HttpStatus.UNAUTHORIZED,
+      );
+    await this.prisma.prisma.posts.delete({
+      where: {
+        id: post.id,
+      },
+    });
+    return {
+      message: 'Post Deleted Successfully',
+    };
   }
 }
