@@ -24,32 +24,45 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { SinglePost } from "~types/forum-post";
+import styles from "@styles/post.module.scss";
+import clsx from "clsx";
 
 async function fetchStats(
 	postSlug: string,
 	forumSlug: string,
 	token?: string | null
 ) {
-	return await axios.get<{ likes: number; liked: boolean }>(
-		`/api/stats/${forumSlug}/${postSlug}`,
-		{
-			headers: token
-				? {
-						Authorization: `Bearer ${token}`,
-				  }
-				: undefined,
-		}
-	);
+	return await axios.get<{
+		likes: number;
+		liked: boolean;
+		menuConfig?: {
+			author: boolean;
+			moderator: boolean;
+			admin: boolean;
+		};
+	}>(`/api/stats/${forumSlug}/${postSlug}`, {
+		headers: token
+			? {
+					Authorization: `Bearer ${token}`,
+			  }
+			: undefined,
+	});
 }
 
 const PostsPage: NextPage<{
 	pageProps: InferGetStaticPropsType<typeof getStaticProps>;
 }> = ({ pageProps }) => {
 	useHydrateUserContext();
-	const { query, isReady } = useRouter();
+
+	const { query, isReady, replace } = useRouter();
 	const [likes, setLikes] = useState(pageProps.post.likedBy || 0);
 	const [liked, setLiked] = useState(pageProps.post.liked || false);
 	const { id } = useUser();
+	const [menuConfig, setMenuConfig] = useState({
+		author: false,
+		moderator: false,
+		admin: false,
+	});
 	useCollapsedSidebar();
 
 	useEffect(() => {
@@ -63,6 +76,7 @@ const PostsPage: NextPage<{
 			.then((d) => {
 				setLikes(d.likes);
 				setLiked(d.liked);
+				if (d.menuConfig) setMenuConfig(d.menuConfig);
 			})
 			.catch((e) => null);
 	}, [isReady]);
@@ -94,16 +108,43 @@ const PostsPage: NextPage<{
 					</p>
 				}
 				showMenu={
-					pageProps?.userInfo?.isAdmin ||
-					pageProps?.userInfo?.isModerator ||
-					pageProps?.userInfo?.isAuthor ||
+					menuConfig.author ||
+					menuConfig.moderator ||
+					menuConfig.admin ||
 					false
 				}
-				deletePost={() => {}}
+				deletePost={() => {
+					axios
+						.delete(
+							`/api/forums/posts/${query.name}/${query.slug}`,
+							{
+								headers: {
+									Authorization: `Bearer ${readCookie(
+										"token"
+									)}`,
+								},
+							}
+						)
+						.then((d) => {
+							showNotification({
+								message: "Post deleted successfully",
+								color: "green",
+							});
+							replace(`/f/${query.name}`);
+						})
+						.catch((e) => {
+							showNotification({
+								message:
+									e?.response?.data?.message ||
+									"Something went wrong",
+								color: "red",
+							});
+						});
+				}}
 			/>
 			<div className="ml-10 pt-4">
 				{typeof window != "undefined" ? (
-					<Renderer>
+					<Renderer classes={clsx({ [styles.container]: true })}>
 						{getMarkdownString(pageProps.post.content)}
 					</Renderer>
 				) : (
