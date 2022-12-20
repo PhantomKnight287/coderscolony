@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpException,
   HttpStatus,
@@ -256,5 +257,62 @@ export class BlogsController {
     });
     if (!blog) throw new HttpException('No Blog Found', HttpStatus.NOT_FOUND);
     return { ...blog, readTime: readingTime(blog.content).text };
+  }
+  @Delete(':username/blog/:slug')
+  async deleteBlog(
+    @Token({ validate: true }) { id }: DecodedJWT,
+    @Param('username') username: string,
+    @Param('slug') slug: string,
+  ) {
+    slug = slugify(slug);
+    const blog = await this.prisma.prisma.blog.findFirst({
+      where: {
+        author: {
+          id,
+        },
+        slug: {
+          equals: slug,
+          mode: 'insensitive',
+        },
+      },
+      select: {
+        id: true,
+        Series: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+    if (!blog) throw new HttpException('No Blog Found', HttpStatus.NOT_FOUND);
+    await this.prisma.prisma.blog.delete({
+      where: {
+        id: blog.id,
+      },
+    });
+    if (blog.Series) {
+      const series = await this.prisma.prisma.series.findFirst({
+        where: {
+          id: blog.Series.id,
+        },
+        select: {
+          blogs: {
+            select: {
+              id: true,
+            },
+          },
+          id: true,
+        },
+      });
+      if (series.blogs.length === 0) {
+        await this.prisma.prisma.series.delete({
+          where: {
+            id: series.id,
+          },
+        });
+      }
+    }
+
+    return { message: 'Blog Deleted' };
   }
 }
